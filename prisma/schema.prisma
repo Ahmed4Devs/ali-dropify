@@ -1,0 +1,313 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  CUSTOMER
+  ADMIN
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  FULFILLED
+  DELIVERED
+  CANCELLED
+  REFUNDED
+}
+
+enum PaymentMethod {
+  STRIPE
+  MOYASAR
+  PAYPAL
+}
+
+enum ReviewSource {
+  STORE
+  ALIEXPRESS
+}
+
+enum ReviewStatus {
+  PENDING
+  APPROVED
+  HIDDEN
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  emailVerified Boolean   @default(false)
+  name          String?
+  firstName     String?
+  lastName      String?
+  phone         String?
+  image         String?
+  role          Role      @default(CUSTOMER)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  sessions      Session[]
+  accounts      Account[]
+  addresses     Address[]
+  orders        Order[]
+  reviews       Review[]
+  carts         Cart[]
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  expiresAt DateTime
+  token     String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model Account {
+  id                    String    @id @default(cuid())
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@unique([providerId, accountId])
+  @@index([userId])
+}
+
+model Verification {
+  id         String   @id @default(cuid())
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+}
+
+model Address {
+  id        String  @id @default(cuid())
+  userId    String
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fullName  String
+  phone     String?
+  country   String
+  state     String
+  city      String
+  street    String
+  apartment String?
+  zip       String
+  isDefault Boolean @default(false)
+
+  @@index([userId])
+}
+
+model Category {
+  id       String    @id @default(cuid())
+  slug     String    @unique
+  nameEn   String
+  nameAr   String
+  image    String?
+  sort     Int       @default(0)
+  products Product[]
+}
+
+model Product {
+  id            String        @id @default(cuid())
+  slug          String        @unique
+  titleEn       String
+  titleAr       String
+  descriptionEn String        @db.Text
+  descriptionAr String        @db.Text
+  priceUsd      Int
+  compareAtUsd  Int?
+  costUsd       Int           @default(0)
+  images        String[]
+  tags          String[]
+  inStock       Boolean       @default(true)
+  isFeatured    Boolean       @default(false)
+  aliexpressUrl String?
+  categoryId    String?
+  category      Category?     @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  variants      Variant[]
+  cartItems     CartItem[]
+  reviews       Review[]
+  orderItems    OrderItem[]
+  productViews  ProductView[]
+  viewsTotal    Int           @default(0)
+  salesCount    Int           @default(0)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@index([categoryId])
+  @@index([isFeatured, salesCount])
+}
+
+model Variant {
+  id        String     @id @default(cuid())
+  productId String
+  product   Product    @relation(fields: [productId], references: [id], onDelete: Cascade)
+  titleEn   String
+  titleAr   String
+  options   Json
+  priceUsd  Int?
+  inStock   Boolean    @default(true)
+  cartItems CartItem[]
+
+  @@index([productId])
+}
+
+model Cart {
+  id                String     @id @default(cuid())
+  userId            String?
+  user              User?      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sessionToken      String?    @unique
+  activeCheckoutKey String?    @unique
+  items             CartItem[]
+  updatedAt         DateTime   @updatedAt
+
+  @@index([userId])
+}
+
+model CartItem {
+  id        String   @id @default(cuid())
+  cartId    String
+  cart      Cart     @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  variantId String?
+  variant   Variant? @relation(fields: [variantId], references: [id], onDelete: SetNull)
+  quantity  Int      @default(1)
+
+  @@unique([cartId, productId, variantId])
+  @@index([productId])
+  @@index([variantId])
+}
+
+model Order {
+  id                String         @id @default(cuid())
+  orderNumber       String         @unique
+  checkoutKey       String         @unique
+  receiptTokenHash  String         @unique
+  userId            String?
+  user              User?          @relation(fields: [userId], references: [id], onDelete: SetNull)
+  email             String
+  phone             String?
+  status            OrderStatus    @default(PENDING)
+  currency          String
+  fxRate            Decimal        @default(1) @db.Decimal(12, 6)
+  subtotal          Int
+  shippingFee       Int            @default(0)
+  total             Int
+  paymentMethod     PaymentMethod?
+  paymentRef        String?        @unique
+  paymentUrl        String?
+  paymentCreatingAt DateTime?
+  paymentLeaseToken String?
+  shippingAddress   Json
+  items             OrderItem[]
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+
+  @@index([userId])
+  @@index([status, createdAt])
+}
+
+model OrderItem {
+  id          String   @id @default(cuid())
+  orderId     String
+  order       Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId   String?
+  product     Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+  titleEn     String
+  titleAr     String?
+  image       String?
+  variant     Json?
+  unitPrice   Int
+  unitCostUsd Int      @default(0)
+  quantity    Int
+
+  @@index([orderId])
+  @@index([productId])
+}
+
+model Review {
+  id         String       @id @default(cuid())
+  productId  String
+  product    Product      @relation(fields: [productId], references: [id], onDelete: Cascade)
+  userId     String?
+  user       User?        @relation(fields: [userId], references: [id], onDelete: SetNull)
+  authorName String
+  rating     Int
+  comment    String       @db.Text
+  images     String[]
+  source     ReviewSource @default(STORE)
+  status     ReviewStatus @default(PENDING)
+  createdAt  DateTime     @default(now())
+
+  @@unique([userId, productId])
+  @@index([productId, status])
+  @@index([userId])
+}
+
+model ProductView {
+  id        String   @id @default(cuid())
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  date      DateTime @db.Date
+  count     Int      @default(0)
+
+  @@unique([productId, date])
+  @@index([date])
+}
+
+model SearchLog {
+  id     String   @id @default(cuid())
+  term   String   @unique
+  count  Int      @default(1)
+  lastAt DateTime @default(now())
+}
+
+model StoreSetting {
+  id                  String  @id @default("main")
+  storeName           String  @default("My Store")
+  logoUrl             String?
+  announcementEn      String?
+  announcementAr      String?
+  announcementEnabled Boolean @default(true)
+  heroTitleEn         String?
+  heroTitleAr         String?
+  heroSubtitleEn      String?
+  heroSubtitleAr      String?
+  heroImage           String?
+  heroCtaEn           String? @default("Shop Now")
+  heroCtaAr           String? @default("تسوق الآن")
+  valueProps          Json?
+  shippingFlatUsd     Int     @default(499)
+  freeShippingMinUsd  Int?    @default(5000)
+  deliveryEstimateEn  String? @default("Delivery in 7–15 business days")
+  deliveryEstimateAr  String? @default("التوصيل خلال ٧–١٥ يوم عمل")
+  sarPerUsd           Decimal @default(3.75) @db.Decimal(12, 6)
+  audPerUsd           Decimal @default(1.55) @db.Decimal(12, 6)
+  supportEmail        String?
+  supportWhatsapp     String?
+  socialLinks         Json?
+}

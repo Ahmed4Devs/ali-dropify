@@ -1,36 +1,60 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Dropify
 
-## Getting Started
+A production-oriented bilingual dropshipping storefront and admin dashboard built as one Next.js 16 application. It includes English/Arabic routing and RTL, Better Auth, Prisma/PostgreSQL, guest and customer carts, Stripe/Moyasar/PayPal adapters, internal analytics, and the complete catalog/order/review/settings admin surface.
 
-First, run the development server:
+## Local setup
 
-```bash
+Requirements: Node.js 20.19+, 22.12+, or 24+, plus an already-running local PostgreSQL server. Update `DATABASE_URL` in `.env` if your connection differs from the example value.
+
+```powershell
+Copy-Item .env.example .env
+npm install
+npm run db:generate
+npm run db:deploy
+npm run db:seed
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open `http://localhost:3000` (it redirects to `/en`) or `http://localhost:3000/ar`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Seeded accounts:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- Admin: `owner@example.com` / `Admin123!`
+- Customer: `maya@example.com` / `Demo123!`
 
-## Learn More
+The fixed passwords are development seed credentials. Do not run the seed against production; create or rotate the production administrator separately.
 
-To learn more about Next.js, take a look at the following resources:
+## Development behavior
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- Verification links, one-time sign-in codes, and order confirmations print to the server console.
+- The dummy gateway keys in `.env.example` complete payments locally without external accounts.
+- Public catalog pages can show the bundled demo catalog while a development database is temporarily unavailable. Production fails closed instead of exposing demo records.
+- Uploaded images are written to `public/uploads`. This is intended for a persistent, single-node deployment; use durable object storage before deploying to an ephemeral or multi-instance host.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Real payment configuration
 
-## Deploy on Vercel
+Replace the dummy values in `.env` with sandbox or live credentials, then configure these endpoints:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- Stripe webhook: `/api/webhooks/stripe`
+- Moyasar invoice callback: `/api/webhooks/moyasar`
+- PayPal return/webhook: `/api/webhooks/paypal`
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Set `PAYPAL_MODE=live` only after completing sandbox verification. Production also requires a non-dummy `BETTER_AUTH_SECRET` of at least 32 characters and HTTPS values for the auth/application URLs.
+
+### Production-only environment additions
+
+Keep the prompt-required `.env.example` unchanged. Add these values directly to the production runtime environment:
+
+- `RESEND_FROM`: a sender on a domain verified in Resend, such as `Store <orders@your-domain.com>`. Production email delivery fails closed when this or `RESEND_API_KEY` is missing.
+- `PAYPAL_WEBHOOK_ID`: the ID of the webhook configured in the PayPal Developer Dashboard; it is required to verify PayPal webhook POSTs.
+
+## Verification
+
+```powershell
+npm test
+npm run lint
+npm run typecheck
+npm run build
+```
+
+Prisma commands are available as `db:generate`, `db:migrate`, `db:deploy`, `db:seed`, and `db:studio`.

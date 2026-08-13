@@ -1,26 +1,122 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: oklch(0.985 0.004 85);
+  --foreground: oklch(0.205 0.012 70);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.205 0.012 70);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.205 0.012 70);
+  --primary: oklch(0.39 0.09 155);
+  --primary-foreground: oklch(0.985 0.004 85);
+  --secondary: oklch(0.945 0.012 85);
+  --secondary-foreground: oklch(0.28 0.02 70);
+  --muted: oklch(0.952 0.006 85);
+  --muted-foreground: oklch(0.52 0.016 70);
+  --accent: oklch(0.92 0.035 153);
+  --accent-foreground: oklch(0.29 0.07 155);
+  --destructive: oklch(0.56 0.19 27);
+  --destructive-foreground: oklch(0.985 0.004 85);
+  --border: oklch(0.885 0.01 85);
+  --input: oklch(0.885 0.01 85);
+  --ring: oklch(0.47 0.1 155);
+  --radius: 0.8rem;
+  --chart-1: oklch(0.47 0.1 155);
+  --chart-2: oklch(0.67 0.12 75);
+  --chart-3: oklch(0.56 0.09 230);
+  --chart-4: oklch(0.74 0.12 125);
+  --chart-5: oklch(0.62 0.1 35);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 6px);
+  --font-sans: var(--font-inter), var(--font-cairo), ui-sans-serif, system-ui, sans-serif;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  border-color: var(--border);
+}
+
+html {
+  scroll-behavior: smooth;
+  background: var(--background);
 }
 
 body {
+  margin: 0;
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-inter), var(--font-cairo), ui-sans-serif, system-ui, sans-serif;
+  text-rendering: optimizeLegibility;
+}
+
+button,
+a,
+input,
+select,
+textarea {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button:not(:disabled),
+[role="button"]:not([aria-disabled="true"]) {
+  cursor: pointer;
+}
+
+::selection {
+  background: var(--accent);
+  color: var(--accent-foreground);
+}
+
+.container-shell {
+  width: min(100% - 2rem, 80rem);
+  margin-inline: auto;
+}
+
+.text-balance {
+  text-wrap: balance;
+}
+
+.hide-scrollbar {
+  scrollbar-width: none;
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .container-shell {
+    width: min(100% - 4rem, 80rem);
+  }
 }
