@@ -4,6 +4,8 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { findCart, getWritableCart } from "@/lib/cart";
+import { availableInventory } from "@/lib/inventory";
+import { consumeRateLimit } from "@/lib/rate-limit";
 
 const cartInputSchema = z.object({
   productId: z.string().min(1),
@@ -28,6 +30,9 @@ export async function addToCartAction(input: z.input<typeof cartInputSchema>) {
   if (!parsed.success) return { ok: false as const, error: "cartInvalidItem" as const };
 
   try {
+    if (!await consumeRateLimit("cart", 120, 60)) {
+      return { ok: false as const, error: "rateLimited" as const };
+    }
     const product = await prisma.product.findUnique({
       where: { id: parsed.data.productId },
       include: { variants: true },
@@ -60,10 +65,22 @@ export async function addToCartAction(input: z.input<typeof cartInputSchema>) {
           variantId: variant?.id ?? null,
         },
       });
+      const desiredQuantity = Math.min(
+        20,
+        (existing?.quantity ?? 0) + parsed.data.quantity,
+      );
+      if (availableInventory({
+        id: existing?.id ?? "new-cart-line",
+        quantity: desiredQuantity,
+        product,
+        variant: variant ?? null,
+      }) < desiredQuantity) {
+        return "out-of-stock" as const;
+      }
       if (existing) {
         await transaction.cartItem.update({
           where: { id: existing.id },
-          data: { quantity: Math.min(20, existing.quantity + parsed.data.quantity) },
+          data: { quantity: desiredQuantity },
         });
       } else {
         await transaction.cartItem.create({
@@ -75,10 +92,16 @@ export async function addToCartAction(input: z.input<typeof cartInputSchema>) {
           },
         });
       }
-      return true;
+      return "updated" as const;
     });
-    if (!mutation) {
+    if (mutation === false) {
       return { ok: false as const, error: "cartLocked" as const };
+    }
+    if (mutation === "out-of-stock") {
+      return {
+        ok: false as const,
+        error: variant ? "cartVariantOutOfStock" as const : "cartItemOutOfStock" as const,
+      };
     }
     revalidatePath(`/${parsed.data.locale}/cart`);
     return { ok: true as const, data: await findCart(parsed.data.locale) };
@@ -91,9 +114,25 @@ export async function updateCartQuantityAction(input: z.input<typeof quantitySch
   const parsed = quantitySchema.safeParse(input);
   if (!parsed.success) return { ok: false as const, error: "cartInvalidQuantity" as const };
   try {
+    if (!await consumeRateLimit("cart", 120, 60)) {
+      return { ok: false as const, error: "rateLimited" as const };
+    }
     const cart = await getWritableCart();
     if (cart.activeCheckoutKey) {
       return { ok: false as const, error: "cartLocked" as const };
+    }
+    const cartItem = await prisma.cartItem.findFirst({
+      where: { id: parsed.data.itemId, cartId: cart.id },
+      include: { product: true, variant: true },
+    });
+    if (!cartItem) {
+      return { ok: false as const, error: "cartItemNotFound" as const };
+    }
+    if (availableInventory({ ...cartItem, quantity: parsed.data.quantity }) < parsed.data.quantity) {
+      return {
+        ok: false as const,
+        error: cartItem.variant ? "cartVariantOutOfStock" as const : "cartItemOutOfStock" as const,
+      };
     }
     const result = await prisma.$transaction(async (transaction) => {
       const unlocked = await transaction.cart.updateMany({
@@ -120,6 +159,9 @@ export async function removeCartItemAction(input: z.input<typeof removeSchema>) 
   const parsed = removeSchema.safeParse(input);
   if (!parsed.success) return { ok: false as const, error: "cartInvalidItem" as const };
   try {
+    if (!await consumeRateLimit("cart", 120, 60)) {
+      return { ok: false as const, error: "rateLimited" as const };
+    }
     const cart = await getWritableCart();
     if (cart.activeCheckoutKey) {
       return { ok: false as const, error: "cartLocked" as const };

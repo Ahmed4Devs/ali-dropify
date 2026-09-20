@@ -5,6 +5,7 @@ import { prismaAdapter } from "@better-auth/prisma-adapter";
 import { betterAuth } from "better-auth";
 import { nextCookies } from "better-auth/next-js";
 import { emailOTP } from "better-auth/plugins";
+import { isManagedAvatarPath } from "@/lib/avatar";
 import { prisma } from "@/lib/prisma";
 import { sendMail } from "@/lib/mail";
 
@@ -28,6 +29,28 @@ export const auth = betterAuth({
   secret,
   trustedOrigins: [baseURL, process.env.NEXT_PUBLIC_APP_URL ?? baseURL],
   database: prismaAdapter(prisma, { provider: "postgresql" }),
+  databaseHooks: {
+    user: {
+      update: {
+        // User.image is only ever written by uploadAvatarAction, which goes through
+        // Prisma directly and so bypasses these hooks. Anything reaching here came
+        // from a client calling better-auth's /update-user, which takes `image` as
+        // free text — and that value is later used to pick a file to delete.
+        //
+        // Strip the field rather than returning false: a rejected update makes
+        // /update-user fall back to echoing the client's own payload into the
+        // session cookie, which would leave the hostile value on session.user.image
+        // anyway. An undefined field is skipped by the adapter, so the stored image
+        // survives untouched and the refreshed cookie carries the real one.
+        async before(user) {
+          const { image } = user;
+          if (image === undefined || image === null) return;
+          if (isManagedAvatarPath(image)) return;
+          return { data: { image: undefined } };
+        },
+      },
+    },
+  },
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: true,
@@ -59,6 +82,20 @@ export const auth = betterAuth({
   },
   session: {
     cookieCache: { enabled: true, maxAge: 300 },
+  },
+  // Brute-force protection for the auth endpoints. Counters live in the database so
+  // they hold across serverless instances instead of per-process memory. better-auth
+  // only enables rate limiting in production, so local development stays unthrottled.
+  rateLimit: {
+    storage: "database",
+    window: 60,
+    max: 60,
+    customRules: {
+      "/sign-in/email": { window: 60, max: 5 },
+      "/sign-up/email": { window: 300, max: 5 },
+      "/sign-in/email-otp": { window: 60, max: 5 },
+      "/email-otp/send-verification-otp": { window: 300, max: 3 },
+    },
   },
   experimental: { joins: true },
   plugins: [

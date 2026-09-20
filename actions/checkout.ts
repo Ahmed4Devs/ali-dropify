@@ -11,6 +11,13 @@ import { Prisma } from "@/generated/prisma/client";
 import type { CurrencyCode, OrderForPayment, PaymentMethodCode } from "@/types";
 import { hashOrderReceipt, orderReceiptCookieName } from "@/lib/order-receipt";
 import { isPaymentCreationUncertainError } from "@/lib/payments/errors";
+import { reconcilePendingOrder } from "@/lib/payments/lifecycle";
+import {
+  isInventoryAvailable,
+  releaseOrderInventory,
+  reserveCartInventory,
+} from "@/lib/inventory";
+import { consumeRateLimit } from "@/lib/rate-limit";
 
 const checkoutSchema = z.object({
   checkoutKey: z.uuid(),
@@ -26,7 +33,7 @@ const checkoutSchema = z.object({
   street: z.string().trim().min(3).max(160),
   apartment: z.string().trim().max(100).optional(),
   zip: z.string().trim().min(2).max(20),
-  paymentMethod: z.enum(["STRIPE", "MOYASAR", "PAYPAL"]),
+  paymentMethod: z.enum(["STRIPE", "MOYASAR", "PAYPAL", "PADDLE", "LEMONSQUEEZY"]),
 });
 
 export async function placeOrderAction(input: z.input<typeof checkoutSchema>) {
@@ -34,16 +41,26 @@ export async function placeOrderAction(input: z.input<typeof checkoutSchema>) {
   const locale = parsed.success ? parsed.data.locale : input.locale === "ar" ? "ar" : "en";
   const t = await getTranslations({ locale, namespace: "checkout.errors" });
   if (!parsed.success) return { ok: false as const, error: t("details") };
+  const paddleEnabled = process.env.NEXT_PUBLIC_PADDLE_ENABLED === "true";
+  const lemonSqueezyEnabled = process.env.NEXT_PUBLIC_LEMONSQUEEZY_ENABLED === "true";
   const validMethods: Record<CurrencyCode, PaymentMethodCode[]> = {
-    USD: ["STRIPE", "PAYPAL"],
+    USD: [
+      "STRIPE",
+      "PAYPAL",
+      ...(paddleEnabled ? ["PADDLE" as const] : []),
+      ...(lemonSqueezyEnabled ? ["LEMONSQUEEZY" as const] : []),
+    ],
     SAR: ["STRIPE", "MOYASAR"],
-    AUD: ["STRIPE", "PAYPAL"],
+    AUD: ["STRIPE", "PAYPAL", ...(paddleEnabled ? ["PADDLE" as const] : [])],
   };
   if (!validMethods[parsed.data.currency].includes(parsed.data.paymentMethod)) {
     return { ok: false as const, error: t("paymentUnavailable") };
   }
 
   try {
+    if (!await consumeRateLimit("checkout", 10, 10 * 60)) {
+      return { ok: false as const, error: t("rateLimited") };
+    }
     assertPaymentMethodConfigured(parsed.data.paymentMethod);
     const session = await getSession();
     const { cookies } = await import("next/headers");
@@ -80,6 +97,7 @@ export async function placeOrderAction(input: z.input<typeof checkoutSchema>) {
               data: { status: "CANCELLED" },
             });
             if (cancelled.count === 1) {
+              await releaseOrderInventory(transaction, existingOrderId);
               await transaction.cart.updateMany({
                 where: { activeCheckoutKey: existingCheckoutKey },
                 data: { activeCheckoutKey: null },
@@ -98,8 +116,30 @@ export async function placeOrderAction(input: z.input<typeof checkoutSchema>) {
           maxAge: 60 * 60 * 24 * 30,
         });
       }
+      if (
+        order.status === "PENDING" &&
+        order.paymentUrl &&
+        order.paymentExpiresAt &&
+        order.paymentExpiresAt <= new Date()
+      ) {
+        const reconciled = await reconcilePendingOrder(order.id, { cancel: true, force: true });
+        if (reconciled.state === "cancelled") {
+          return { ok: false as const, error: t("attemptExpired"), resetAttempt: true as const };
+        }
+        if (reconciled.state === "unknown") {
+          return { ok: false as const, error: t("paymentPreparing") };
+        }
+        order = await prisma.order.findUnique({
+          where: { id: order.id },
+          include: { items: true },
+        });
+        if (!order) return { ok: false as const, error: t("attemptUnavailable") };
+      }
       if (order.paymentUrl && order.status === "PENDING") {
         return { ok: true as const, data: { redirectUrl: order.paymentUrl, orderId: order.id } };
+      }
+      if (order.status === "CANCELLED") {
+        return { ok: false as const, error: t("attemptExpired"), resetAttempt: true as const };
       }
       if (order.status !== "PENDING") {
         return {
@@ -125,46 +165,71 @@ export async function placeOrderAction(input: z.input<typeof checkoutSchema>) {
           paymentUrl: true,
           paymentCreatingAt: true,
           paymentLeaseToken: true,
+          providerCheckoutId: true,
+          paymentExpiresAt: true,
+          paymentRef: true,
+          paymentMethod: true,
+          currency: true,
+          total: true,
         },
       });
       if (activeOrder?.status === "PENDING" && activeOrder.paymentUrl) {
-        return {
-          ok: true as const,
-          data: { redirectUrl: activeOrder.paymentUrl, orderId: activeOrder.id },
-        };
+        if (activeOrder.paymentExpiresAt && activeOrder.paymentExpiresAt <= new Date()) {
+          const reconciled = await reconcilePendingOrder(activeOrder.id, { cancel: true, force: true });
+          if (reconciled.state === "cancelled") {
+            cart.activeCheckoutKey = null;
+          } else if (reconciled.state === "paid") {
+            return {
+              ok: true as const,
+              data: {
+                redirectUrl: `${appUrl}/${parsed.data.locale}/checkout/success?order=${activeOrder.id}`,
+                orderId: activeOrder.id,
+              },
+            };
+          } else {
+            return { ok: false as const, error: t("activeAttempt") };
+          }
+        } else {
+          return {
+            ok: true as const,
+            data: { redirectUrl: activeOrder.paymentUrl, orderId: activeOrder.id },
+          };
+        }
       }
-      const creationNeverStarted = !activeOrder?.paymentCreatingAt &&
-        !activeOrder?.paymentLeaseToken;
-      if (activeOrder?.status === "PENDING" && !activeOrder.paymentUrl && creationNeverStarted) {
-        const activeCheckoutKey = cart.activeCheckoutKey;
-        const cancelled = await prisma.$transaction(async (transaction) => {
-          const transition = await transaction.order.updateMany({
-            where: {
-              id: activeOrder.id,
-              status: "PENDING",
-              paymentUrl: null,
-              paymentCreatingAt: null,
-              paymentLeaseToken: null,
-            },
-            data: { status: "CANCELLED" },
+      if (cart.activeCheckoutKey) {
+        const creationNeverStarted = !activeOrder?.paymentCreatingAt &&
+          !activeOrder?.paymentLeaseToken;
+        if (activeOrder?.status === "PENDING" && !activeOrder.paymentUrl && creationNeverStarted) {
+          const activeCheckoutKey = cart.activeCheckoutKey;
+          const cancelled = await prisma.$transaction(async (transaction) => {
+            const transition = await transaction.order.updateMany({
+              where: {
+                id: activeOrder.id,
+                status: "PENDING",
+                paymentUrl: null,
+                paymentCreatingAt: null,
+                paymentLeaseToken: null,
+              },
+              data: { status: "CANCELLED" },
+            });
+            if (transition.count !== 1) return false;
+            await releaseOrderInventory(transaction, activeOrder.id);
+            await transaction.cart.updateMany({
+              where: { id: cart.id, activeCheckoutKey },
+              data: { activeCheckoutKey: null },
+            });
+            return true;
           });
-          if (transition.count !== 1) return false;
-          await transaction.cart.updateMany({
-            where: { id: cart.id, activeCheckoutKey },
-            data: { activeCheckoutKey: null },
-          });
-          return true;
-        });
-        if (!cancelled) return { ok: false as const, error: t("activeAttempt") };
-        cart.activeCheckoutKey = null;
-      } else {
-        return { ok: false as const, error: t("activeAttempt") };
+          if (!cancelled) return { ok: false as const, error: t("activeAttempt") };
+          cart.activeCheckoutKey = null;
+        } else {
+          return { ok: false as const, error: t("activeAttempt") };
+        }
       }
     }
     if (cart.items.some((item) =>
-      !item.product.inStock ||
       (item.product.variants.length > 0 && !item.variant) ||
-      (item.variant && !item.variant.inStock)
+      !isInventoryAvailable(item)
     )) {
       return { ok: false as const, error: t("stockChanged") };
     }
@@ -195,10 +260,12 @@ export async function placeOrderAction(input: z.input<typeof checkoutSchema>) {
           });
           if (!claimedCart?.items.length) throw new Error("CHECKOUT_CART_EMPTY");
           if (claimedCart.items.some((item) =>
-            !item.product.inStock ||
             (item.product.variants.length > 0 && !item.variant) ||
-            (item.variant && !item.variant.inStock)
+            !isInventoryAvailable(item)
           )) throw new Error("CHECKOUT_STOCK_CHANGED");
+
+          const reservations = await reserveCartInventory(transaction, claimedCart.items);
+          const hasReservations = [...reservations.values()].some((quantity) => quantity > 0);
 
           const settings = await transaction.storeSetting.findUnique({ where: { id: "main" } });
           const sar = Number(settings?.sarPerUsd ?? 3.75);
@@ -247,9 +314,11 @@ export async function placeOrderAction(input: z.input<typeof checkoutSchema>) {
               total: subtotal + shippingFee,
               paymentMethod: parsed.data.paymentMethod,
               shippingAddress: address,
+              inventoryState: hasReservations ? "RESERVED" : "NOT_TRACKED",
               items: {
                 create: chargedItems.map(({ item, unitPrice }) => ({
                   productId: item.productId,
+                  variantId: item.variantId,
                   titleEn: item.product.titleEn,
                   titleAr: item.product.titleAr,
                   image: item.product.images[0],
@@ -259,6 +328,7 @@ export async function placeOrderAction(input: z.input<typeof checkoutSchema>) {
                   unitPrice,
                   unitCostUsd: item.product.costUsd,
                   quantity: item.quantity,
+                  inventoryReserved: reservations.get(item.id) ?? 0,
                 })),
               },
             },
@@ -295,7 +365,9 @@ export async function placeOrderAction(input: z.input<typeof checkoutSchema>) {
     }
     const paymentLeaseToken = randomUUID();
     const leaseCutoff = new Date(Date.now() - 5 * 60_000);
-    const canReclaimExpiredLease = order.paymentMethod !== "MOYASAR";
+    const canReclaimExpiredLease = !["MOYASAR", "PADDLE", "LEMONSQUEEZY"].includes(
+      order.paymentMethod ?? "",
+    );
     const lease = await prisma.order.updateMany({
       where: {
         id: order.id,
@@ -342,15 +414,35 @@ export async function placeOrderAction(input: z.input<typeof checkoutSchema>) {
       payment = await getPaymentAdapter(order.paymentMethod as PaymentMethodCode).createPayment(paymentOrder);
     } catch (error) {
       if (!isPaymentCreationUncertainError(error)) {
-        await prisma.order.updateMany({
-          where: {
-            id: order.id,
-            status: "PENDING",
-            paymentUrl: null,
-            paymentLeaseToken,
-          },
-          data: { paymentCreatingAt: null, paymentLeaseToken: null },
+        const cancelled = await prisma.$transaction(async (transaction) => {
+          const transition = await transaction.order.updateMany({
+            where: {
+              id: order.id,
+              status: "PENDING",
+              paymentUrl: null,
+              paymentLeaseToken,
+            },
+            data: {
+              status: "CANCELLED",
+              paymentCreatingAt: null,
+              paymentLeaseToken: null,
+            },
+          });
+          if (transition.count !== 1) return false;
+          await releaseOrderInventory(transaction, order.id);
+          await transaction.cart.updateMany({
+            where: { activeCheckoutKey: order.checkoutKey },
+            data: { activeCheckoutKey: null },
+          });
+          return true;
         });
+        if (cancelled) {
+          const failure = new Error(
+            error instanceof Error ? error.message : "Payment creation failed",
+          );
+          failure.name = "DefinitivePaymentCreationError";
+          throw failure;
+        }
       }
       throw error;
     }
@@ -363,7 +455,9 @@ export async function placeOrderAction(input: z.input<typeof checkoutSchema>) {
       },
       data: {
         paymentUrl: payment.redirectUrl,
-        paymentRef: payment.paymentRef,
+        paymentRef: payment.paidInDevelopment ? payment.paymentRef : null,
+        providerCheckoutId: payment.checkoutId,
+        paymentExpiresAt: payment.expiresAt,
         paymentCreatingAt: null,
         paymentLeaseToken: null,
       },
@@ -377,12 +471,17 @@ export async function placeOrderAction(input: z.input<typeof checkoutSchema>) {
       "Stripe is not configured",
       "PayPal is not configured",
       "Moyasar is not configured",
+      "Paddle is not configured",
+      "Lemon Squeezy is not configured",
     ]);
     return {
       ok: false as const,
       error: error instanceof Error && safeMessages.has(error.message)
         ? t("providerUnavailable")
         : t("placeFailed"),
+      ...(error instanceof Error && error.name === "DefinitivePaymentCreationError"
+        ? { resetAttempt: true as const }
+        : {}),
     };
   }
 }

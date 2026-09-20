@@ -24,7 +24,7 @@ export function ProductCard({ product, locale }: ProductCardProps) {
   return (
     <article className="group min-w-0">
       <div className="relative aspect-[4/5] overflow-hidden rounded-xl bg-muted">
-        <Link href={`/products/${product.slug}`} className="block size-full">
+        <Link href={`/products/${product.slug}`} className="relative block size-full">
           <Image
             src={product.images[0] ?? "https://picsum.photos/seed/product/800/1000"}
             alt={title}

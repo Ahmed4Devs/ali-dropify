@@ -19,6 +19,7 @@ export const moyasarAdapter: PaymentAdapter = {
         paidInDevelopment: true,
       };
     }
+    const expiresAt = new Date(Date.now() + 31 * 60_000);
     let response: Response;
     try {
       response = await fetch("https://api.moyasar.com/v1/invoices", {
@@ -31,6 +32,7 @@ export const moyasarAdapter: PaymentAdapter = {
           amount: order.total,
           currency: "SAR",
           description: `Order ${order.orderNumber}`,
+          expired_at: expiresAt.toISOString(),
           callback_url: `${appUrl}/api/webhooks/moyasar?order=${order.id}&locale=${order.locale}`,
           success_url: `${appUrl}/${order.locale}/checkout/success?order=${order.id}`,
           back_url: `${appUrl}/${order.locale}/checkout?payment=cancelled`,
@@ -67,6 +69,6 @@ export const moyasarAdapter: PaymentAdapter = {
         "Moyasar created an invoice without complete redirect details",
       );
     }
-    return { redirectUrl: invoice.url, paymentRef: invoice.id };
+    return { redirectUrl: invoice.url, checkoutId: invoice.id, expiresAt };
   },
 };

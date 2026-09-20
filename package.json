@@ -6,14 +6,15 @@
   "packageManager": "npm@11.6.2",
   "scripts": {
     "dev": "next dev",
-    "build": "prisma generate && prisma db push && next build",
+    "build": "prisma generate && next build",
+    "release": "npm run db:deploy",
     "start": "next start",
     "lint": "eslint",
     "typecheck": "next typegen && tsc --noEmit",
-    "test": "node --import tsx --test tests/currency.test.ts",
+    "test": "node --import tsx --test tests/*.test.ts",
     "db:generate": "prisma generate",
-    "db:migrate": "prisma migrate dev",
-    "db:deploy": "prisma migrate deploy",
+    "db:migrate": "node scripts/assert-direct-url.mjs && prisma migrate dev",
+    "db:deploy": "node scripts/assert-direct-url.mjs && prisma migrate deploy",
     "db:seed": "prisma db seed",
     "db:studio": "prisma studio"
   },
@@ -72,5 +73,9 @@
     "@prisma/engines@7.9.1": true,
     "esbuild@0.28.2": true,
     "@swc/core@1.15.47": true
+  },
+  "overrides": {
+    "fast-uri": "^3.1.6",
+    "mysql2": "^3.23.1"
   }
 }

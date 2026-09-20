@@ -407,6 +407,10 @@
       "moyasarDescription": "ادفع بأمان عبر Moyasar",
       "paypal": "PayPal",
       "paypalDescription": "انتقل إلى PayPal للموافقة على الدفع",
+      "paddle": "Paddle",
+      "paddleDescription": "ادفع بأمان عبر Paddle",
+      "lemonSqueezy": "Lemon Squeezy",
+      "lemonSqueezyDescription": "انتقل إلى Lemon Squeezy للموافقة على الدفع",
       "unavailable": "لا تتوفر طريقة دفع لهذه العملة."
     },
     "summary": {
@@ -419,6 +423,8 @@
     "placeOrder": "تأكيد الطلب",
     "resumePayment": "متابعة الدفع",
     "processing": "جارٍ تجهيز الدفع الآمن...",
+    "paddleLoading": "جارٍ فتح صفحة الدفع الآمنة من Paddle...",
+    "paddleUnavailable": "تعذر تحميل صفحة Paddle. ارجع إلى إتمام الطلب وحاول مرة أخرى.",
     "secureNotice": "يتولى مزود الدفع المحدد معالجة معلومات الدفع الخاصة بك.",
     "agreement": "بتأكيد الطلب، فإنك توافق على شروط المتجر وسياسة الاسترجاع.",
     "emptyCartTitle": "سلة التسوق فارغة",
@@ -435,6 +441,8 @@
       "paymentUnavailable": "طريقة الدفع هذه غير متاحة للعملة المحددة.",
       "attemptUnavailable": "محاولة إتمام الطلب هذه لم تعد متاحة.",
       "attemptChanged": "تغيرت بيانات إتمام الطلب. ابدأ محاولة جديدة.",
+      "attemptExpired": "انتهت محاولة الدفع السابقة. أعد التأكيد لبدء عملية دفع آمنة جديدة.",
+      "rateLimited": "توجد محاولات دفع كثيرة. انتظر بضع دقائق ثم حاول مجددًا.",
       "empty": "سلة التسوق فارغة.",
       "activeAttempt": "توجد عملية دفع قيد التنفيذ لهذه السلة. تابعها قبل إجراء أي تغييرات.",
       "stockChanged": "منتج واحد أو أكثر في السلة لم يعد متوفرًا.",
@@ -450,7 +458,7 @@
     "processingTitle": "جارٍ معالجة الدفع",
     "processingDescription": "قد يستغرق التأكيد لحظات. يمكنك الاطلاع على أحدث حالة من حسابك.",
     "orderNumber": "الطلب رقم {number}",
-    "confirmationSent": "تم إرسال تأكيد إلى {email}.",
+    "confirmationSent": "تم تأكيد طلبك. احتفظ بهذه الصفحة للرجوع إليها؛ وقد يستغرق وصول البريد إلى {email} بضع دقائق.",
     "summaryTitle": "تفاصيل الطلب",
     "whatNextTitle": "ما الخطوة التالية؟",
     "whatNextDescription": "سنجهّز منتجاتك ونرسل تحديثات التوصيل باستخدام بيانات التواصل الخاصة بك.",
@@ -569,7 +577,9 @@
     "payment": {
       "stripe": "Stripe",
       "moyasar": "Moyasar",
-      "paypal": "PayPal"
+      "paypal": "PayPal",
+      "paddle": "Paddle",
+      "lemonSqueezy": "Lemon Squeezy"
     }
   },
   "admin": {
@@ -690,7 +700,13 @@
       "price": "السعر بالدولار الأمريكي",
       "compareAt": "السعر قبل التخفيض بالدولار",
       "cost": "تكلفة المورّد بالدولار",
+      "sku": "رمز SKU",
+      "skuHint": "معرّف مخزون فريد اختياري يقبل الحروف والأرقام والنقاط والشرطات والشرطات السفلية.",
       "inStock": "المنتج متوفر",
+      "inventory": "المخزون",
+      "trackInventory": "تتبّع المخزون",
+      "stockQuantity": "كمية المخزون",
+      "reservedQuantity": "{count, plural, one {وحدة واحدة محجوزة لمحاولة دفع نشطة} two {وحدتان محجوزتان لمحاولات دفع نشطة} few {# وحدات محجوزة لمحاولات دفع نشطة} many {# وحدة محجوزة لمحاولات دفع نشطة} other {# وحدة محجوزة لمحاولات دفع نشطة}}",
       "featured": "تمييز هذا المنتج",
       "aliexpressUrl": "رابط المصدر في AliExpress",
       "aliexpressUrlPlaceholder": "ألصق رابط المنتج في AliExpress",
@@ -747,6 +763,8 @@
       "updateStatus": "تحديث الحالة",
       "statusUpdated": "تم تحديث حالة الطلب.",
       "statusUpdateFailed": "تعذّر تحديث حالة الطلب.",
+      "refundReason": "سبب الاسترداد",
+      "refundReasonPlaceholder": "السبب الذي سيظهر في سجل التدقيق",
       "noImage": "لا توجد صورة",
       "paymentStatus": "الدفع والحالة",
       "emptyTitle": "لم يتم العثور على طلبات",
@@ -889,6 +907,7 @@
     "orderUnavailable": "تعذر العثور على هذا الطلب."
   },
   "mutationErrors": {
+    "rateLimited": "طلبات كثيرة خلال وقت قصير. انتظر قليلًا ثم حاول مجددًا.",
     "cartInvalidItem": "اختر منتجًا صالحًا.",
     "cartItemOutOfStock": "هذا المنتج غير متوفر حاليًا.",
     "cartOptionsRequired": "اختر خيارات المنتج قبل إضافته إلى السلة.",
@@ -921,6 +940,9 @@
     "reviewAlreadySubmitted": "سبق أن قيّمت هذا المنتج.",
     "reviewSubmitFailed": "تعذر إرسال تقييمك.",
     "adminSlugInUse": "هذا المعرّف النصي مستخدم بالفعل.",
+    "adminSkuInUse": "رمز SKU مستخدم بالفعل.",
+    "adminStockBelowReserved": "لا يمكن أن يقل المخزون عن الكمية المحجوزة لمحاولات الدفع النشطة.",
+    "adminVariantReserved": "لا يمكن حذف خيار محجوز لمحاولة دفع نشطة.",
     "adminRelatedRecordMissing": "لم يعد أحد السجلات المرتبطة المحددة موجودًا.",
     "adminRecordNotFound": "تعذر العثور على السجل المطلوب.",
     "adminInvalidCategory": "تحقق من بيانات الفئة وحاول مرة أخرى.",

@@ -407,6 +407,10 @@
       "moyasarDescription": "Pay securely through Moyasar",
       "paypal": "PayPal",
       "paypalDescription": "Continue to PayPal to approve your payment",
+      "paddle": "Paddle",
+      "paddleDescription": "Pay securely through Paddle",
+      "lemonSqueezy": "Lemon Squeezy",
+      "lemonSqueezyDescription": "Continue to Lemon Squeezy to approve your payment",
       "unavailable": "No payment method is available for this currency."
     },
     "summary": {
@@ -419,6 +423,8 @@
     "placeOrder": "Place order",
     "resumePayment": "Resume payment",
     "processing": "Preparing secure payment...",
+    "paddleLoading": "Opening the secure Paddle checkout...",
+    "paddleUnavailable": "Paddle checkout could not be loaded. Return to checkout and try again.",
     "secureNotice": "Your payment information is handled by the selected payment provider.",
     "agreement": "By placing your order, you agree to the store terms and return policy.",
     "emptyCartTitle": "Your cart is empty",
@@ -435,6 +441,8 @@
       "paymentUnavailable": "That payment method is not available for the selected currency.",
       "attemptUnavailable": "This checkout attempt is no longer available.",
       "attemptChanged": "Your checkout details changed. Start a new checkout attempt.",
+      "attemptExpired": "The previous payment attempt expired. Submit again to start a new secure payment.",
+      "rateLimited": "Too many checkout attempts. Wait a few minutes and try again.",
       "empty": "Your cart is empty.",
       "activeAttempt": "A payment is already in progress for this cart. Resume it before making changes.",
       "stockChanged": "One or more cart items are no longer available.",
@@ -450,7 +458,7 @@
     "processingTitle": "Payment is processing",
     "processingDescription": "Confirmation may take a moment. You can check the latest status in your account.",
     "orderNumber": "Order #{number}",
-    "confirmationSent": "A confirmation was sent to {email}.",
+    "confirmationSent": "Your order is confirmed. Keep this page for your records; email delivery to {email} may take a few minutes.",
     "summaryTitle": "Order details",
     "whatNextTitle": "What happens next?",
     "whatNextDescription": "We will prepare your items and send delivery updates using your contact details.",
@@ -569,7 +577,9 @@
     "payment": {
       "stripe": "Stripe",
       "moyasar": "Moyasar",
-      "paypal": "PayPal"
+      "paypal": "PayPal",
+      "paddle": "Paddle",
+      "lemonSqueezy": "Lemon Squeezy"
     }
   },
   "admin": {
@@ -690,7 +700,13 @@
       "price": "Price in USD",
       "compareAt": "Compare-at price in USD",
       "cost": "Supplier cost in USD",
+      "sku": "SKU",
+      "skuHint": "Optional unique stock identifier using letters, numbers, dots, underscores, or hyphens.",
       "inStock": "Product is in stock",
+      "inventory": "Inventory",
+      "trackInventory": "Track inventory",
+      "stockQuantity": "Stock quantity",
+      "reservedQuantity": "{count, plural, one {# unit reserved by an active checkout} other {# units reserved by active checkouts}}",
       "featured": "Feature this product",
       "aliexpressUrl": "AliExpress source URL",
       "aliexpressUrlPlaceholder": "Paste the AliExpress product URL",
@@ -747,6 +763,8 @@
       "updateStatus": "Update status",
       "statusUpdated": "Order status updated.",
       "statusUpdateFailed": "Could not update the order status.",
+      "refundReason": "Refund reason",
+      "refundReasonPlaceholder": "Reason shown in the audit log",
       "noImage": "No image",
       "paymentStatus": "Payment and status",
       "emptyTitle": "No orders found",
@@ -889,6 +907,7 @@
     "orderUnavailable": "This order could not be found."
   },
   "mutationErrors": {
+    "rateLimited": "Too many requests. Wait a moment and try again.",
     "cartInvalidItem": "Choose a valid item.",
     "cartItemOutOfStock": "This item is currently out of stock.",
     "cartOptionsRequired": "Choose product options before adding this item.",
@@ -921,6 +940,9 @@
     "reviewAlreadySubmitted": "You have already reviewed this product.",
     "reviewSubmitFailed": "Your review could not be submitted.",
     "adminSlugInUse": "That URL slug is already in use.",
+    "adminSkuInUse": "That SKU is already in use.",
+    "adminStockBelowReserved": "Stock cannot be lower than the quantity reserved by active checkouts.",
+    "adminVariantReserved": "A variant reserved by an active checkout cannot be removed.",
     "adminRelatedRecordMissing": "A selected related record no longer exists.",
     "adminRecordNotFound": "The requested record was not found.",
     "adminInvalidCategory": "Check the category details and try again.",

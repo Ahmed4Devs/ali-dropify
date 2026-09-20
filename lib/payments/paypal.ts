@@ -41,6 +41,7 @@ export const paypalAdapter: PaymentAdapter = {
       };
     }
     const accessToken = await getPayPalAccessToken();
+    const expiresAt = new Date(Date.now() + 3 * 60 * 60_000);
     const response = await fetch(`${getPayPalBaseUrl()}/v2/checkout/orders`, {
       method: "POST",
       headers: {
@@ -64,7 +65,7 @@ export const paypalAdapter: PaymentAdapter = {
     if (!response.ok) throw new Error(`PayPal order creation failed (${response.status})`);
     const body = (await response.json()) as { id?: string; links?: Array<{ rel: string; href: string }> };
     const approval = body.links?.find((link) => link.rel === "approve")?.href;
-    if (!approval) throw new Error("PayPal did not return an approval URL");
-    return { redirectUrl: approval, paymentRef: body.id };
+    if (!body.id || !approval) throw new Error("PayPal did not return complete approval details");
+    return { redirectUrl: approval, checkoutId: body.id, expiresAt };
   },
 };

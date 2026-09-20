@@ -62,10 +62,14 @@ export const ModelName = {
   Cart: 'Cart',
   CartItem: 'CartItem',
   Order: 'Order',
+  PaymentEvent: 'PaymentEvent',
+  Refund: 'Refund',
+  AdminAuditLog: 'AdminAuditLog',
   OrderItem: 'OrderItem',
   Review: 'Review',
   ProductView: 'ProductView',
   SearchLog: 'SearchLog',
+  RateLimit: 'RateLimit',
   StoreSetting: 'StoreSetting'
 } as const
 
@@ -186,9 +190,13 @@ export const ProductScalarFieldEnum = {
   priceUsd: 'priceUsd',
   compareAtUsd: 'compareAtUsd',
   costUsd: 'costUsd',
+  sku: 'sku',
   images: 'images',
   tags: 'tags',
   inStock: 'inStock',
+  trackInventory: 'trackInventory',
+  stockQuantity: 'stockQuantity',
+  reservedQuantity: 'reservedQuantity',
   isFeatured: 'isFeatured',
   aliexpressUrl: 'aliexpressUrl',
   categoryId: 'categoryId',
@@ -208,7 +216,11 @@ export const VariantScalarFieldEnum = {
   titleAr: 'titleAr',
   options: 'options',
   priceUsd: 'priceUsd',
-  inStock: 'inStock'
+  sku: 'sku',
+  inStock: 'inStock',
+  trackInventory: 'trackInventory',
+  stockQuantity: 'stockQuantity',
+  reservedQuantity: 'reservedQuantity'
 } as const
 
 export type VariantScalarFieldEnum = (typeof VariantScalarFieldEnum)[keyof typeof VariantScalarFieldEnum]
@@ -252,10 +264,13 @@ export const OrderScalarFieldEnum = {
   total: 'total',
   paymentMethod: 'paymentMethod',
   paymentRef: 'paymentRef',
+  providerCheckoutId: 'providerCheckoutId',
   paymentUrl: 'paymentUrl',
+  paymentExpiresAt: 'paymentExpiresAt',
   paymentCreatingAt: 'paymentCreatingAt',
   paymentLeaseToken: 'paymentLeaseToken',
   shippingAddress: 'shippingAddress',
+  inventoryState: 'inventoryState',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -263,17 +278,69 @@ export const OrderScalarFieldEnum = {
 export type OrderScalarFieldEnum = (typeof OrderScalarFieldEnum)[keyof typeof OrderScalarFieldEnum]
 
 
+export const PaymentEventScalarFieldEnum = {
+  id: 'id',
+  provider: 'provider',
+  externalId: 'externalId',
+  type: 'type',
+  status: 'status',
+  orderId: 'orderId',
+  attempts: 'attempts',
+  processingAt: 'processingAt',
+  processedAt: 'processedAt',
+  error: 'error',
+  receivedAt: 'receivedAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type PaymentEventScalarFieldEnum = (typeof PaymentEventScalarFieldEnum)[keyof typeof PaymentEventScalarFieldEnum]
+
+
+export const RefundScalarFieldEnum = {
+  id: 'id',
+  orderId: 'orderId',
+  provider: 'provider',
+  amount: 'amount',
+  currency: 'currency',
+  reason: 'reason',
+  status: 'status',
+  providerRef: 'providerRef',
+  requestedById: 'requestedById',
+  error: 'error',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  completedAt: 'completedAt'
+} as const
+
+export type RefundScalarFieldEnum = (typeof RefundScalarFieldEnum)[keyof typeof RefundScalarFieldEnum]
+
+
+export const AdminAuditLogScalarFieldEnum = {
+  id: 'id',
+  adminUserId: 'adminUserId',
+  action: 'action',
+  targetType: 'targetType',
+  targetId: 'targetId',
+  metadata: 'metadata',
+  createdAt: 'createdAt'
+} as const
+
+export type AdminAuditLogScalarFieldEnum = (typeof AdminAuditLogScalarFieldEnum)[keyof typeof AdminAuditLogScalarFieldEnum]
+
+
 export const OrderItemScalarFieldEnum = {
   id: 'id',
   orderId: 'orderId',
   productId: 'productId',
+  variantId: 'variantId',
   titleEn: 'titleEn',
   titleAr: 'titleAr',
   image: 'image',
   variant: 'variant',
   unitPrice: 'unitPrice',
   unitCostUsd: 'unitCostUsd',
-  quantity: 'quantity'
+  quantity: 'quantity',
+  inventoryReserved: 'inventoryReserved'
 } as const
 
 export type OrderItemScalarFieldEnum = (typeof OrderItemScalarFieldEnum)[keyof typeof OrderItemScalarFieldEnum]
@@ -313,6 +380,16 @@ export const SearchLogScalarFieldEnum = {
 } as const
 
 export type SearchLogScalarFieldEnum = (typeof SearchLogScalarFieldEnum)[keyof typeof SearchLogScalarFieldEnum]
+
+
+export const RateLimitScalarFieldEnum = {
+  id: 'id',
+  key: 'key',
+  count: 'count',
+  lastRequest: 'lastRequest'
+} as const
+
+export type RateLimitScalarFieldEnum = (typeof RateLimitScalarFieldEnum)[keyof typeof RateLimitScalarFieldEnum]
 
 
 export const StoreSettingScalarFieldEnum = {

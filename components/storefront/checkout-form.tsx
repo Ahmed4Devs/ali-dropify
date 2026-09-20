@@ -41,7 +41,18 @@ export function CheckoutForm({ locale, settings, initialEmail, savedAddresses }:
   const [pending, startTransition] = useTransition();
   const [email, setEmail] = useState(initialEmail);
   const [address, setAddress] = useState<ShippingAddress>(savedAddresses.find((entry) => entry.isDefault) ?? blankAddress);
-  const availableMethods: PaymentMethodCode[] = currency === "SAR" ? ["STRIPE", "MOYASAR"] : ["STRIPE", "PAYPAL"];
+  const paddleEnabled = process.env.NEXT_PUBLIC_PADDLE_ENABLED === "true";
+  const lemonSqueezyEnabled = process.env.NEXT_PUBLIC_LEMONSQUEEZY_ENABLED === "true";
+  const availableMethods: PaymentMethodCode[] = currency === "SAR"
+    ? ["STRIPE", "MOYASAR"]
+    : currency === "AUD"
+      ? ["STRIPE", "PAYPAL", ...(paddleEnabled ? ["PADDLE" as const] : [])]
+      : [
+          "STRIPE",
+          "PAYPAL",
+          ...(paddleEnabled ? ["PADDLE" as const] : []),
+          ...(lemonSqueezyEnabled ? ["LEMONSQUEEZY" as const] : []),
+        ];
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethodCode>("STRIPE");
   const attemptRef = useRef<{ checkoutKey: string; receiptToken: string; cartSignature: string } | null>(null);
   const threshold = settings.freeShippingMinUsd;
@@ -112,6 +123,10 @@ export function CheckoutForm({ locale, settings, initialEmail, savedAddresses }:
         paymentMethod: availableMethods.includes(paymentMethod) ? paymentMethod : "STRIPE",
       });
       if (!result.ok) {
+        if ("resetAttempt" in result && result.resetAttempt) {
+          attemptRef.current = null;
+          sessionStorage.removeItem(storageKey);
+        }
         toast.error(result.error);
         return;
       }
@@ -155,7 +170,7 @@ export function CheckoutForm({ locale, settings, initialEmail, savedAddresses }:
               <label key={method} className={`flex items-center gap-4 rounded-xl border p-4 transition ${paymentMethod === method ? "border-primary bg-accent/60" : "hover:border-foreground/30"}`}>
                 <RadioGroupItem value={method} />
                 <span className="grid size-10 place-items-center rounded-lg bg-muted"><CreditCard className="size-5" /></span>
-                <span className="font-semibold">{method === "MOYASAR" ? t("payment.moyasar") : method === "PAYPAL" ? t("payment.paypal") : t("payment.stripe")}</span>
+                <span className="font-semibold">{t(`payment.${method === "LEMONSQUEEZY" ? "lemonSqueezy" : method.toLowerCase()}`)}</span>
               </label>
             ))}
           </RadioGroup>

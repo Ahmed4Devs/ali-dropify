@@ -110,6 +110,7 @@ export const demoProducts = catalog.map((item, index) => {
     priceUsd: item[3],
     compareAtUsd: item[4],
     costUsd: item[5],
+    sku: `DEMO-${String(index + 1).padStart(3, "0")}`,
     images: [
       `https://picsum.photos/seed/${item[7]}-1/1000/1200`,
       `https://picsum.photos/seed/${item[7]}-2/1000/1200`,
@@ -117,6 +118,9 @@ export const demoProducts = catalog.map((item, index) => {
     ],
     tags: index % 2 ? ["essential", "gift"] : ["bestseller", "new"],
     inStock: index !== 8,
+    trackInventory: !hasOptions,
+    stockQuantity: index === 8 ? 0 : 50,
+    reservedQuantity: 0,
     isFeatured: item[9],
     aliexpressUrl: "https://www.aliexpress.com/",
     categoryId: item[6],
@@ -127,10 +131,10 @@ export const demoProducts = catalog.map((item, index) => {
     updatedAt: new Date().toISOString(),
     variants: hasOptions
       ? [
-          { id: `variant-${index}-1`, titleEn: "Sand / S", titleAr: "رملي / S", options: { color: "Sand", size: "S" }, priceUsd: null, inStock: true },
-          { id: `variant-${index}-2`, titleEn: "Sand / M", titleAr: "رملي / M", options: { color: "Sand", size: "M" }, priceUsd: null, inStock: true },
-          { id: `variant-${index}-3`, titleEn: "Black / M", titleAr: "أسود / M", options: { color: "Black", size: "M" }, priceUsd: item[3] + 200, inStock: true },
-          { id: `variant-${index}-4`, titleEn: "Black / L", titleAr: "أسود / L", options: { color: "Black", size: "L" }, priceUsd: item[3] + 200, inStock: false },
+          { id: `variant-${index}-1`, titleEn: "Sand / S", titleAr: "رملي / S", options: { color: "Sand", size: "S" }, priceUsd: null, sku: `DEMO-${index}-SAND-S`, inStock: true, trackInventory: true, stockQuantity: 20, reservedQuantity: 0 },
+          { id: `variant-${index}-2`, titleEn: "Sand / M", titleAr: "رملي / M", options: { color: "Sand", size: "M" }, priceUsd: null, sku: `DEMO-${index}-SAND-M`, inStock: true, trackInventory: true, stockQuantity: 20, reservedQuantity: 0 },
+          { id: `variant-${index}-3`, titleEn: "Black / M", titleAr: "أسود / M", options: { color: "Black", size: "M" }, priceUsd: item[3] + 200, sku: `DEMO-${index}-BLACK-M`, inStock: true, trackInventory: true, stockQuantity: 20, reservedQuantity: 0 },
+          { id: `variant-${index}-4`, titleEn: "Black / L", titleAr: "أسود / L", options: { color: "Black", size: "L" }, priceUsd: item[3] + 200, sku: `DEMO-${index}-BLACK-L`, inStock: false, trackInventory: true, stockQuantity: 0, reservedQuantity: 0 },
         ]
       : [],
   };

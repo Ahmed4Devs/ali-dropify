@@ -28,11 +28,12 @@ export async function generateMetadata(): Promise<Metadata> {
   const storeName = settings?.storeName ?? "Online Store";
   const host = requestHeaders.get("x-forwarded-host") ?? requestHeaders.get("host") ?? "localhost:3000";
   const protocol = requestHeaders.get("x-forwarded-proto") ?? (host.startsWith("localhost") ? "http" : "https");
-  const image = `${protocol}://${host}/og.png`;
+  const origin = process.env.NEXT_PUBLIC_APP_URL ?? `${protocol}://${host}`;
+  const image = `${origin}/og.png`;
   return {
     title: { default: storeName, template: `%s · ${storeName}` },
     description: settings?.heroSubtitleEn ?? "Thoughtful essentials, honest prices, secure checkout, and tracked delivery.",
-    metadataBase: new URL(`${protocol}://${host}`),
+    metadataBase: new URL(origin),
     openGraph: {
       title: storeName,
       description: settings?.heroSubtitleEn ?? "Thoughtful essentials at honest prices.",

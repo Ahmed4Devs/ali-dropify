@@ -97,6 +97,21 @@ export type CartItem = Prisma.CartItemModel
  */
 export type Order = Prisma.OrderModel
 /**
+ * Model PaymentEvent
+ * 
+ */
+export type PaymentEvent = Prisma.PaymentEventModel
+/**
+ * Model Refund
+ * 
+ */
+export type Refund = Prisma.RefundModel
+/**
+ * Model AdminAuditLog
+ * 
+ */
+export type AdminAuditLog = Prisma.AdminAuditLogModel
+/**
  * Model OrderItem
  * 
  */
@@ -116,6 +131,11 @@ export type ProductView = Prisma.ProductViewModel
  * 
  */
 export type SearchLog = Prisma.SearchLogModel
+/**
+ * Model RateLimit
+ * 
+ */
+export type RateLimit = Prisma.RateLimitModel
 /**
  * Model StoreSetting
  * 

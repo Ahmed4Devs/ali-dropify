@@ -1,4 +1,5 @@
 import Image from "next/image";
+import type { Metadata } from "next";
 import { CheckCircle2, Star } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
@@ -13,6 +14,41 @@ import { getSession } from "@/lib/dal";
 import { getProductBySlug, getRelatedProducts, getStoreSettings } from "@/lib/data";
 import { prisma } from "@/lib/prisma";
 import type { Locale } from "@/types";
+
+export async function generateMetadata({
+  params,
+}: PageProps<"/[locale]/products/[slug]">): Promise<Metadata> {
+  const { locale: localeParam, slug } = await params;
+  const locale = localeParam as Locale;
+  const product = await getProductBySlug(slug);
+  if (!product) return { title: locale === "ar" ? "المنتج غير موجود" : "Product not found" };
+  const title = locale === "ar" ? product.titleAr : product.titleEn;
+  const description = (locale === "ar" ? product.descriptionAr : product.descriptionEn)
+    .replace(/\s+/g, " ")
+    .slice(0, 160);
+  const path = `/products/${product.slug}`;
+  return {
+    title,
+    description,
+    alternates: {
+      canonical: `/${locale}${path}`,
+      languages: { en: `/en${path}`, ar: `/ar${path}` },
+    },
+    openGraph: {
+      type: "website",
+      title,
+      description,
+      url: `/${locale}${path}`,
+      images: product.images.map((url) => ({ url, alt: title })),
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: product.images.slice(0, 1),
+    },
+  };
+}
 
 export default async function ProductPage({ params }: PageProps<"/[locale]/products/[slug]">) {
   const { locale: localeParam, slug } = await params;
@@ -40,9 +76,45 @@ export default async function ProductPage({ params }: PageProps<"/[locale]/produ
   const reviews = product.reviews ?? [];
   const average = reviews.length ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length : 0;
   const description = locale === "ar" ? product.descriptionAr : product.descriptionEn;
+  const title = locale === "ar" ? product.titleAr : product.titleEn;
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: title,
+    description,
+    image: product.images,
+    ...(product.sku ? { sku: product.sku } : {}),
+    brand: { "@type": "Brand", name: settings.storeName },
+    url: `${baseUrl}/${locale}/products/${product.slug}`,
+    offers: {
+      "@type": "Offer",
+      priceCurrency: "USD",
+      price: (product.priceUsd / 100).toFixed(2),
+      availability: product.inStock
+        ? "https://schema.org/InStock"
+        : "https://schema.org/OutOfStock",
+      url: `${baseUrl}/${locale}/products/${product.slug}`,
+    },
+    ...(reviews.length
+      ? {
+          aggregateRating: {
+            "@type": "AggregateRating",
+            ratingValue: average.toFixed(1),
+            reviewCount: reviews.length,
+          },
+        }
+      : {}),
+  };
 
   return (
     <div className="container-shell py-8 pb-24 sm:py-12 lg:pb-0">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c"),
+        }}
+      />
       <ProductViewTracker productId={product.id} priceUsd={product.priceUsd} currency={currency} />
       <ProductPurchase product={product} locale={locale} currency={currency} settings={settings} />
 

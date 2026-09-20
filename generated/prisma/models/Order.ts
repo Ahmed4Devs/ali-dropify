@@ -56,9 +56,12 @@ export type OrderMinAggregateOutputType = {
   total: number | null
   paymentMethod: $Enums.PaymentMethod | null
   paymentRef: string | null
+  providerCheckoutId: string | null
   paymentUrl: string | null
+  paymentExpiresAt: Date | null
   paymentCreatingAt: Date | null
   paymentLeaseToken: string | null
+  inventoryState: $Enums.InventoryState | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -79,9 +82,12 @@ export type OrderMaxAggregateOutputType = {
   total: number | null
   paymentMethod: $Enums.PaymentMethod | null
   paymentRef: string | null
+  providerCheckoutId: string | null
   paymentUrl: string | null
+  paymentExpiresAt: Date | null
   paymentCreatingAt: Date | null
   paymentLeaseToken: string | null
+  inventoryState: $Enums.InventoryState | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -102,10 +108,13 @@ export type OrderCountAggregateOutputType = {
   total: number
   paymentMethod: number
   paymentRef: number
+  providerCheckoutId: number
   paymentUrl: number
+  paymentExpiresAt: number
   paymentCreatingAt: number
   paymentLeaseToken: number
   shippingAddress: number
+  inventoryState: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -142,9 +151,12 @@ export type OrderMinAggregateInputType = {
   total?: true
   paymentMethod?: true
   paymentRef?: true
+  providerCheckoutId?: true
   paymentUrl?: true
+  paymentExpiresAt?: true
   paymentCreatingAt?: true
   paymentLeaseToken?: true
+  inventoryState?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -165,9 +177,12 @@ export type OrderMaxAggregateInputType = {
   total?: true
   paymentMethod?: true
   paymentRef?: true
+  providerCheckoutId?: true
   paymentUrl?: true
+  paymentExpiresAt?: true
   paymentCreatingAt?: true
   paymentLeaseToken?: true
+  inventoryState?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -188,10 +203,13 @@ export type OrderCountAggregateInputType = {
   total?: true
   paymentMethod?: true
   paymentRef?: true
+  providerCheckoutId?: true
   paymentUrl?: true
+  paymentExpiresAt?: true
   paymentCreatingAt?: true
   paymentLeaseToken?: true
   shippingAddress?: true
+  inventoryState?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -299,10 +317,13 @@ export type OrderGroupByOutputType = {
   total: number
   paymentMethod: $Enums.PaymentMethod | null
   paymentRef: string | null
+  providerCheckoutId: string | null
   paymentUrl: string | null
+  paymentExpiresAt: Date | null
   paymentCreatingAt: Date | null
   paymentLeaseToken: string | null
   shippingAddress: runtime.JsonValue
+  inventoryState: $Enums.InventoryState
   createdAt: Date
   updatedAt: Date
   _count: OrderCountAggregateOutputType | null
@@ -346,14 +367,19 @@ export type OrderWhereInput = {
   total?: Prisma.IntFilter<"Order"> | number
   paymentMethod?: Prisma.EnumPaymentMethodNullableFilter<"Order"> | $Enums.PaymentMethod | null
   paymentRef?: Prisma.StringNullableFilter<"Order"> | string | null
+  providerCheckoutId?: Prisma.StringNullableFilter<"Order"> | string | null
   paymentUrl?: Prisma.StringNullableFilter<"Order"> | string | null
+  paymentExpiresAt?: Prisma.DateTimeNullableFilter<"Order"> | Date | string | null
   paymentCreatingAt?: Prisma.DateTimeNullableFilter<"Order"> | Date | string | null
   paymentLeaseToken?: Prisma.StringNullableFilter<"Order"> | string | null
   shippingAddress?: Prisma.JsonFilter<"Order">
+  inventoryState?: Prisma.EnumInventoryStateFilter<"Order"> | $Enums.InventoryState
   createdAt?: Prisma.DateTimeFilter<"Order"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Order"> | Date | string
   user?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
   items?: Prisma.OrderItemListRelationFilter
+  paymentEvents?: Prisma.PaymentEventListRelationFilter
+  refund?: Prisma.XOR<Prisma.RefundNullableScalarRelationFilter, Prisma.RefundWhereInput> | null
 }
 
 export type OrderOrderByWithRelationInput = {
@@ -372,14 +398,19 @@ export type OrderOrderByWithRelationInput = {
   total?: Prisma.SortOrder
   paymentMethod?: Prisma.SortOrderInput | Prisma.SortOrder
   paymentRef?: Prisma.SortOrderInput | Prisma.SortOrder
+  providerCheckoutId?: Prisma.SortOrderInput | Prisma.SortOrder
   paymentUrl?: Prisma.SortOrderInput | Prisma.SortOrder
+  paymentExpiresAt?: Prisma.SortOrderInput | Prisma.SortOrder
   paymentCreatingAt?: Prisma.SortOrderInput | Prisma.SortOrder
   paymentLeaseToken?: Prisma.SortOrderInput | Prisma.SortOrder
   shippingAddress?: Prisma.SortOrder
+  inventoryState?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   user?: Prisma.UserOrderByWithRelationInput
   items?: Prisma.OrderItemOrderByRelationAggregateInput
+  paymentEvents?: Prisma.PaymentEventOrderByRelationAggregateInput
+  refund?: Prisma.RefundOrderByWithRelationInput
 }
 
 export type OrderWhereUniqueInput = Prisma.AtLeast<{
@@ -388,6 +419,7 @@ export type OrderWhereUniqueInput = Prisma.AtLeast<{
   checkoutKey?: string
   receiptTokenHash?: string
   paymentRef?: string
+  providerCheckoutId?: string
   AND?: Prisma.OrderWhereInput | Prisma.OrderWhereInput[]
   OR?: Prisma.OrderWhereInput[]
   NOT?: Prisma.OrderWhereInput | Prisma.OrderWhereInput[]
@@ -402,14 +434,18 @@ export type OrderWhereUniqueInput = Prisma.AtLeast<{
   total?: Prisma.IntFilter<"Order"> | number
   paymentMethod?: Prisma.EnumPaymentMethodNullableFilter<"Order"> | $Enums.PaymentMethod | null
   paymentUrl?: Prisma.StringNullableFilter<"Order"> | string | null
+  paymentExpiresAt?: Prisma.DateTimeNullableFilter<"Order"> | Date | string | null
   paymentCreatingAt?: Prisma.DateTimeNullableFilter<"Order"> | Date | string | null
   paymentLeaseToken?: Prisma.StringNullableFilter<"Order"> | string | null
   shippingAddress?: Prisma.JsonFilter<"Order">
+  inventoryState?: Prisma.EnumInventoryStateFilter<"Order"> | $Enums.InventoryState
   createdAt?: Prisma.DateTimeFilter<"Order"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Order"> | Date | string
   user?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
   items?: Prisma.OrderItemListRelationFilter
-}, "id" | "orderNumber" | "checkoutKey" | "receiptTokenHash" | "paymentRef">
+  paymentEvents?: Prisma.PaymentEventListRelationFilter
+  refund?: Prisma.XOR<Prisma.RefundNullableScalarRelationFilter, Prisma.RefundWhereInput> | null
+}, "id" | "orderNumber" | "checkoutKey" | "receiptTokenHash" | "paymentRef" | "providerCheckoutId">
 
 export type OrderOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
@@ -427,10 +463,13 @@ export type OrderOrderByWithAggregationInput = {
   total?: Prisma.SortOrder
   paymentMethod?: Prisma.SortOrderInput | Prisma.SortOrder
   paymentRef?: Prisma.SortOrderInput | Prisma.SortOrder
+  providerCheckoutId?: Prisma.SortOrderInput | Prisma.SortOrder
   paymentUrl?: Prisma.SortOrderInput | Prisma.SortOrder
+  paymentExpiresAt?: Prisma.SortOrderInput | Prisma.SortOrder
   paymentCreatingAt?: Prisma.SortOrderInput | Prisma.SortOrder
   paymentLeaseToken?: Prisma.SortOrderInput | Prisma.SortOrder
   shippingAddress?: Prisma.SortOrder
+  inventoryState?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.OrderCountOrderByAggregateInput
@@ -459,10 +498,13 @@ export type OrderScalarWhereWithAggregatesInput = {
   total?: Prisma.IntWithAggregatesFilter<"Order"> | number
   paymentMethod?: Prisma.EnumPaymentMethodNullableWithAggregatesFilter<"Order"> | $Enums.PaymentMethod | null
   paymentRef?: Prisma.StringNullableWithAggregatesFilter<"Order"> | string | null
+  providerCheckoutId?: Prisma.StringNullableWithAggregatesFilter<"Order"> | string | null
   paymentUrl?: Prisma.StringNullableWithAggregatesFilter<"Order"> | string | null
+  paymentExpiresAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Order"> | Date | string | null
   paymentCreatingAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Order"> | Date | string | null
   paymentLeaseToken?: Prisma.StringNullableWithAggregatesFilter<"Order"> | string | null
   shippingAddress?: Prisma.JsonWithAggregatesFilter<"Order">
+  inventoryState?: Prisma.EnumInventoryStateWithAggregatesFilter<"Order"> | $Enums.InventoryState
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Order"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Order"> | Date | string
 }
@@ -482,14 +524,19 @@ export type OrderCreateInput = {
   total: number
   paymentMethod?: $Enums.PaymentMethod | null
   paymentRef?: string | null
+  providerCheckoutId?: string | null
   paymentUrl?: string | null
+  paymentExpiresAt?: Date | string | null
   paymentCreatingAt?: Date | string | null
   paymentLeaseToken?: string | null
   shippingAddress: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  inventoryState?: $Enums.InventoryState
   createdAt?: Date | string
   updatedAt?: Date | string
   user?: Prisma.UserCreateNestedOneWithoutOrdersInput
   items?: Prisma.OrderItemCreateNestedManyWithoutOrderInput
+  paymentEvents?: Prisma.PaymentEventCreateNestedManyWithoutOrderInput
+  refund?: Prisma.RefundCreateNestedOneWithoutOrderInput
 }
 
 export type OrderUncheckedCreateInput = {
@@ -508,13 +555,18 @@ export type OrderUncheckedCreateInput = {
   total: number
   paymentMethod?: $Enums.PaymentMethod | null
   paymentRef?: string | null
+  providerCheckoutId?: string | null
   paymentUrl?: string | null
+  paymentExpiresAt?: Date | string | null
   paymentCreatingAt?: Date | string | null
   paymentLeaseToken?: string | null
   shippingAddress: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  inventoryState?: $Enums.InventoryState
   createdAt?: Date | string
   updatedAt?: Date | string
   items?: Prisma.OrderItemUncheckedCreateNestedManyWithoutOrderInput
+  paymentEvents?: Prisma.PaymentEventUncheckedCreateNestedManyWithoutOrderInput
+  refund?: Prisma.RefundUncheckedCreateNestedOneWithoutOrderInput
 }
 
 export type OrderUpdateInput = {
@@ -532,14 +584,19 @@ export type OrderUpdateInput = {
   total?: Prisma.IntFieldUpdateOperationsInput | number
   paymentMethod?: Prisma.NullableEnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod | null
   paymentRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  providerCheckoutId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   paymentUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  paymentExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   paymentCreatingAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   paymentLeaseToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   shippingAddress?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  inventoryState?: Prisma.EnumInventoryStateFieldUpdateOperationsInput | $Enums.InventoryState
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   user?: Prisma.UserUpdateOneWithoutOrdersNestedInput
   items?: Prisma.OrderItemUpdateManyWithoutOrderNestedInput
+  paymentEvents?: Prisma.PaymentEventUpdateManyWithoutOrderNestedInput
+  refund?: Prisma.RefundUpdateOneWithoutOrderNestedInput
 }
 
 export type OrderUncheckedUpdateInput = {
@@ -558,13 +615,18 @@ export type OrderUncheckedUpdateInput = {
   total?: Prisma.IntFieldUpdateOperationsInput | number
   paymentMethod?: Prisma.NullableEnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod | null
   paymentRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  providerCheckoutId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   paymentUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  paymentExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   paymentCreatingAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   paymentLeaseToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   shippingAddress?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  inventoryState?: Prisma.EnumInventoryStateFieldUpdateOperationsInput | $Enums.InventoryState
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   items?: Prisma.OrderItemUncheckedUpdateManyWithoutOrderNestedInput
+  paymentEvents?: Prisma.PaymentEventUncheckedUpdateManyWithoutOrderNestedInput
+  refund?: Prisma.RefundUncheckedUpdateOneWithoutOrderNestedInput
 }
 
 export type OrderCreateManyInput = {
@@ -583,10 +645,13 @@ export type OrderCreateManyInput = {
   total: number
   paymentMethod?: $Enums.PaymentMethod | null
   paymentRef?: string | null
+  providerCheckoutId?: string | null
   paymentUrl?: string | null
+  paymentExpiresAt?: Date | string | null
   paymentCreatingAt?: Date | string | null
   paymentLeaseToken?: string | null
   shippingAddress: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  inventoryState?: $Enums.InventoryState
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -606,10 +671,13 @@ export type OrderUpdateManyMutationInput = {
   total?: Prisma.IntFieldUpdateOperationsInput | number
   paymentMethod?: Prisma.NullableEnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod | null
   paymentRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  providerCheckoutId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   paymentUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  paymentExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   paymentCreatingAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   paymentLeaseToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   shippingAddress?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  inventoryState?: Prisma.EnumInventoryStateFieldUpdateOperationsInput | $Enums.InventoryState
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -630,10 +698,13 @@ export type OrderUncheckedUpdateManyInput = {
   total?: Prisma.IntFieldUpdateOperationsInput | number
   paymentMethod?: Prisma.NullableEnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod | null
   paymentRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  providerCheckoutId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   paymentUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  paymentExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   paymentCreatingAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   paymentLeaseToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   shippingAddress?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  inventoryState?: Prisma.EnumInventoryStateFieldUpdateOperationsInput | $Enums.InventoryState
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -664,10 +735,13 @@ export type OrderCountOrderByAggregateInput = {
   total?: Prisma.SortOrder
   paymentMethod?: Prisma.SortOrder
   paymentRef?: Prisma.SortOrder
+  providerCheckoutId?: Prisma.SortOrder
   paymentUrl?: Prisma.SortOrder
+  paymentExpiresAt?: Prisma.SortOrder
   paymentCreatingAt?: Prisma.SortOrder
   paymentLeaseToken?: Prisma.SortOrder
   shippingAddress?: Prisma.SortOrder
+  inventoryState?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -695,9 +769,12 @@ export type OrderMaxOrderByAggregateInput = {
   total?: Prisma.SortOrder
   paymentMethod?: Prisma.SortOrder
   paymentRef?: Prisma.SortOrder
+  providerCheckoutId?: Prisma.SortOrder
   paymentUrl?: Prisma.SortOrder
+  paymentExpiresAt?: Prisma.SortOrder
   paymentCreatingAt?: Prisma.SortOrder
   paymentLeaseToken?: Prisma.SortOrder
+  inventoryState?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -718,9 +795,12 @@ export type OrderMinOrderByAggregateInput = {
   total?: Prisma.SortOrder
   paymentMethod?: Prisma.SortOrder
   paymentRef?: Prisma.SortOrder
+  providerCheckoutId?: Prisma.SortOrder
   paymentUrl?: Prisma.SortOrder
+  paymentExpiresAt?: Prisma.SortOrder
   paymentCreatingAt?: Prisma.SortOrder
   paymentLeaseToken?: Prisma.SortOrder
+  inventoryState?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -730,6 +810,11 @@ export type OrderSumOrderByAggregateInput = {
   subtotal?: Prisma.SortOrder
   shippingFee?: Prisma.SortOrder
   total?: Prisma.SortOrder
+}
+
+export type OrderNullableScalarRelationFilter = {
+  is?: Prisma.OrderWhereInput | null
+  isNot?: Prisma.OrderWhereInput | null
 }
 
 export type OrderScalarRelationFilter = {
@@ -795,6 +880,40 @@ export type NullableEnumPaymentMethodFieldUpdateOperationsInput = {
   set?: $Enums.PaymentMethod | null
 }
 
+export type EnumInventoryStateFieldUpdateOperationsInput = {
+  set?: $Enums.InventoryState
+}
+
+export type OrderCreateNestedOneWithoutPaymentEventsInput = {
+  create?: Prisma.XOR<Prisma.OrderCreateWithoutPaymentEventsInput, Prisma.OrderUncheckedCreateWithoutPaymentEventsInput>
+  connectOrCreate?: Prisma.OrderCreateOrConnectWithoutPaymentEventsInput
+  connect?: Prisma.OrderWhereUniqueInput
+}
+
+export type OrderUpdateOneWithoutPaymentEventsNestedInput = {
+  create?: Prisma.XOR<Prisma.OrderCreateWithoutPaymentEventsInput, Prisma.OrderUncheckedCreateWithoutPaymentEventsInput>
+  connectOrCreate?: Prisma.OrderCreateOrConnectWithoutPaymentEventsInput
+  upsert?: Prisma.OrderUpsertWithoutPaymentEventsInput
+  disconnect?: Prisma.OrderWhereInput | boolean
+  delete?: Prisma.OrderWhereInput | boolean
+  connect?: Prisma.OrderWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.OrderUpdateToOneWithWhereWithoutPaymentEventsInput, Prisma.OrderUpdateWithoutPaymentEventsInput>, Prisma.OrderUncheckedUpdateWithoutPaymentEventsInput>
+}
+
+export type OrderCreateNestedOneWithoutRefundInput = {
+  create?: Prisma.XOR<Prisma.OrderCreateWithoutRefundInput, Prisma.OrderUncheckedCreateWithoutRefundInput>
+  connectOrCreate?: Prisma.OrderCreateOrConnectWithoutRefundInput
+  connect?: Prisma.OrderWhereUniqueInput
+}
+
+export type OrderUpdateOneRequiredWithoutRefundNestedInput = {
+  create?: Prisma.XOR<Prisma.OrderCreateWithoutRefundInput, Prisma.OrderUncheckedCreateWithoutRefundInput>
+  connectOrCreate?: Prisma.OrderCreateOrConnectWithoutRefundInput
+  upsert?: Prisma.OrderUpsertWithoutRefundInput
+  connect?: Prisma.OrderWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.OrderUpdateToOneWithWhereWithoutRefundInput, Prisma.OrderUpdateWithoutRefundInput>, Prisma.OrderUncheckedUpdateWithoutRefundInput>
+}
+
 export type OrderCreateNestedOneWithoutItemsInput = {
   create?: Prisma.XOR<Prisma.OrderCreateWithoutItemsInput, Prisma.OrderUncheckedCreateWithoutItemsInput>
   connectOrCreate?: Prisma.OrderCreateOrConnectWithoutItemsInput
@@ -824,13 +943,18 @@ export type OrderCreateWithoutUserInput = {
   total: number
   paymentMethod?: $Enums.PaymentMethod | null
   paymentRef?: string | null
+  providerCheckoutId?: string | null
   paymentUrl?: string | null
+  paymentExpiresAt?: Date | string | null
   paymentCreatingAt?: Date | string | null
   paymentLeaseToken?: string | null
   shippingAddress: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  inventoryState?: $Enums.InventoryState
   createdAt?: Date | string
   updatedAt?: Date | string
   items?: Prisma.OrderItemCreateNestedManyWithoutOrderInput
+  paymentEvents?: Prisma.PaymentEventCreateNestedManyWithoutOrderInput
+  refund?: Prisma.RefundCreateNestedOneWithoutOrderInput
 }
 
 export type OrderUncheckedCreateWithoutUserInput = {
@@ -848,13 +972,18 @@ export type OrderUncheckedCreateWithoutUserInput = {
   total: number
   paymentMethod?: $Enums.PaymentMethod | null
   paymentRef?: string | null
+  providerCheckoutId?: string | null
   paymentUrl?: string | null
+  paymentExpiresAt?: Date | string | null
   paymentCreatingAt?: Date | string | null
   paymentLeaseToken?: string | null
   shippingAddress: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  inventoryState?: $Enums.InventoryState
   createdAt?: Date | string
   updatedAt?: Date | string
   items?: Prisma.OrderItemUncheckedCreateNestedManyWithoutOrderInput
+  paymentEvents?: Prisma.PaymentEventUncheckedCreateNestedManyWithoutOrderInput
+  refund?: Prisma.RefundUncheckedCreateNestedOneWithoutOrderInput
 }
 
 export type OrderCreateOrConnectWithoutUserInput = {
@@ -902,12 +1031,279 @@ export type OrderScalarWhereInput = {
   total?: Prisma.IntFilter<"Order"> | number
   paymentMethod?: Prisma.EnumPaymentMethodNullableFilter<"Order"> | $Enums.PaymentMethod | null
   paymentRef?: Prisma.StringNullableFilter<"Order"> | string | null
+  providerCheckoutId?: Prisma.StringNullableFilter<"Order"> | string | null
   paymentUrl?: Prisma.StringNullableFilter<"Order"> | string | null
+  paymentExpiresAt?: Prisma.DateTimeNullableFilter<"Order"> | Date | string | null
   paymentCreatingAt?: Prisma.DateTimeNullableFilter<"Order"> | Date | string | null
   paymentLeaseToken?: Prisma.StringNullableFilter<"Order"> | string | null
   shippingAddress?: Prisma.JsonFilter<"Order">
+  inventoryState?: Prisma.EnumInventoryStateFilter<"Order"> | $Enums.InventoryState
   createdAt?: Prisma.DateTimeFilter<"Order"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Order"> | Date | string
+}
+
+export type OrderCreateWithoutPaymentEventsInput = {
+  id?: string
+  orderNumber: string
+  checkoutKey: string
+  receiptTokenHash: string
+  email: string
+  phone?: string | null
+  status?: $Enums.OrderStatus
+  currency: string
+  fxRate?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  subtotal: number
+  shippingFee?: number
+  total: number
+  paymentMethod?: $Enums.PaymentMethod | null
+  paymentRef?: string | null
+  providerCheckoutId?: string | null
+  paymentUrl?: string | null
+  paymentExpiresAt?: Date | string | null
+  paymentCreatingAt?: Date | string | null
+  paymentLeaseToken?: string | null
+  shippingAddress: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  inventoryState?: $Enums.InventoryState
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  user?: Prisma.UserCreateNestedOneWithoutOrdersInput
+  items?: Prisma.OrderItemCreateNestedManyWithoutOrderInput
+  refund?: Prisma.RefundCreateNestedOneWithoutOrderInput
+}
+
+export type OrderUncheckedCreateWithoutPaymentEventsInput = {
+  id?: string
+  orderNumber: string
+  checkoutKey: string
+  receiptTokenHash: string
+  userId?: string | null
+  email: string
+  phone?: string | null
+  status?: $Enums.OrderStatus
+  currency: string
+  fxRate?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  subtotal: number
+  shippingFee?: number
+  total: number
+  paymentMethod?: $Enums.PaymentMethod | null
+  paymentRef?: string | null
+  providerCheckoutId?: string | null
+  paymentUrl?: string | null
+  paymentExpiresAt?: Date | string | null
+  paymentCreatingAt?: Date | string | null
+  paymentLeaseToken?: string | null
+  shippingAddress: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  inventoryState?: $Enums.InventoryState
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  items?: Prisma.OrderItemUncheckedCreateNestedManyWithoutOrderInput
+  refund?: Prisma.RefundUncheckedCreateNestedOneWithoutOrderInput
+}
+
+export type OrderCreateOrConnectWithoutPaymentEventsInput = {
+  where: Prisma.OrderWhereUniqueInput
+  create: Prisma.XOR<Prisma.OrderCreateWithoutPaymentEventsInput, Prisma.OrderUncheckedCreateWithoutPaymentEventsInput>
+}
+
+export type OrderUpsertWithoutPaymentEventsInput = {
+  update: Prisma.XOR<Prisma.OrderUpdateWithoutPaymentEventsInput, Prisma.OrderUncheckedUpdateWithoutPaymentEventsInput>
+  create: Prisma.XOR<Prisma.OrderCreateWithoutPaymentEventsInput, Prisma.OrderUncheckedCreateWithoutPaymentEventsInput>
+  where?: Prisma.OrderWhereInput
+}
+
+export type OrderUpdateToOneWithWhereWithoutPaymentEventsInput = {
+  where?: Prisma.OrderWhereInput
+  data: Prisma.XOR<Prisma.OrderUpdateWithoutPaymentEventsInput, Prisma.OrderUncheckedUpdateWithoutPaymentEventsInput>
+}
+
+export type OrderUpdateWithoutPaymentEventsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  orderNumber?: Prisma.StringFieldUpdateOperationsInput | string
+  checkoutKey?: Prisma.StringFieldUpdateOperationsInput | string
+  receiptTokenHash?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumOrderStatusFieldUpdateOperationsInput | $Enums.OrderStatus
+  currency?: Prisma.StringFieldUpdateOperationsInput | string
+  fxRate?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  subtotal?: Prisma.IntFieldUpdateOperationsInput | number
+  shippingFee?: Prisma.IntFieldUpdateOperationsInput | number
+  total?: Prisma.IntFieldUpdateOperationsInput | number
+  paymentMethod?: Prisma.NullableEnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod | null
+  paymentRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  providerCheckoutId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  paymentUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  paymentExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  paymentCreatingAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  paymentLeaseToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  shippingAddress?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  inventoryState?: Prisma.EnumInventoryStateFieldUpdateOperationsInput | $Enums.InventoryState
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  user?: Prisma.UserUpdateOneWithoutOrdersNestedInput
+  items?: Prisma.OrderItemUpdateManyWithoutOrderNestedInput
+  refund?: Prisma.RefundUpdateOneWithoutOrderNestedInput
+}
+
+export type OrderUncheckedUpdateWithoutPaymentEventsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  orderNumber?: Prisma.StringFieldUpdateOperationsInput | string
+  checkoutKey?: Prisma.StringFieldUpdateOperationsInput | string
+  receiptTokenHash?: Prisma.StringFieldUpdateOperationsInput | string
+  userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumOrderStatusFieldUpdateOperationsInput | $Enums.OrderStatus
+  currency?: Prisma.StringFieldUpdateOperationsInput | string
+  fxRate?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  subtotal?: Prisma.IntFieldUpdateOperationsInput | number
+  shippingFee?: Prisma.IntFieldUpdateOperationsInput | number
+  total?: Prisma.IntFieldUpdateOperationsInput | number
+  paymentMethod?: Prisma.NullableEnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod | null
+  paymentRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  providerCheckoutId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  paymentUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  paymentExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  paymentCreatingAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  paymentLeaseToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  shippingAddress?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  inventoryState?: Prisma.EnumInventoryStateFieldUpdateOperationsInput | $Enums.InventoryState
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  items?: Prisma.OrderItemUncheckedUpdateManyWithoutOrderNestedInput
+  refund?: Prisma.RefundUncheckedUpdateOneWithoutOrderNestedInput
+}
+
+export type OrderCreateWithoutRefundInput = {
+  id?: string
+  orderNumber: string
+  checkoutKey: string
+  receiptTokenHash: string
+  email: string
+  phone?: string | null
+  status?: $Enums.OrderStatus
+  currency: string
+  fxRate?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  subtotal: number
+  shippingFee?: number
+  total: number
+  paymentMethod?: $Enums.PaymentMethod | null
+  paymentRef?: string | null
+  providerCheckoutId?: string | null
+  paymentUrl?: string | null
+  paymentExpiresAt?: Date | string | null
+  paymentCreatingAt?: Date | string | null
+  paymentLeaseToken?: string | null
+  shippingAddress: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  inventoryState?: $Enums.InventoryState
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  user?: Prisma.UserCreateNestedOneWithoutOrdersInput
+  items?: Prisma.OrderItemCreateNestedManyWithoutOrderInput
+  paymentEvents?: Prisma.PaymentEventCreateNestedManyWithoutOrderInput
+}
+
+export type OrderUncheckedCreateWithoutRefundInput = {
+  id?: string
+  orderNumber: string
+  checkoutKey: string
+  receiptTokenHash: string
+  userId?: string | null
+  email: string
+  phone?: string | null
+  status?: $Enums.OrderStatus
+  currency: string
+  fxRate?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  subtotal: number
+  shippingFee?: number
+  total: number
+  paymentMethod?: $Enums.PaymentMethod | null
+  paymentRef?: string | null
+  providerCheckoutId?: string | null
+  paymentUrl?: string | null
+  paymentExpiresAt?: Date | string | null
+  paymentCreatingAt?: Date | string | null
+  paymentLeaseToken?: string | null
+  shippingAddress: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  inventoryState?: $Enums.InventoryState
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  items?: Prisma.OrderItemUncheckedCreateNestedManyWithoutOrderInput
+  paymentEvents?: Prisma.PaymentEventUncheckedCreateNestedManyWithoutOrderInput
+}
+
+export type OrderCreateOrConnectWithoutRefundInput = {
+  where: Prisma.OrderWhereUniqueInput
+  create: Prisma.XOR<Prisma.OrderCreateWithoutRefundInput, Prisma.OrderUncheckedCreateWithoutRefundInput>
+}
+
+export type OrderUpsertWithoutRefundInput = {
+  update: Prisma.XOR<Prisma.OrderUpdateWithoutRefundInput, Prisma.OrderUncheckedUpdateWithoutRefundInput>
+  create: Prisma.XOR<Prisma.OrderCreateWithoutRefundInput, Prisma.OrderUncheckedCreateWithoutRefundInput>
+  where?: Prisma.OrderWhereInput
+}
+
+export type OrderUpdateToOneWithWhereWithoutRefundInput = {
+  where?: Prisma.OrderWhereInput
+  data: Prisma.XOR<Prisma.OrderUpdateWithoutRefundInput, Prisma.OrderUncheckedUpdateWithoutRefundInput>
+}
+
+export type OrderUpdateWithoutRefundInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  orderNumber?: Prisma.StringFieldUpdateOperationsInput | string
+  checkoutKey?: Prisma.StringFieldUpdateOperationsInput | string
+  receiptTokenHash?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumOrderStatusFieldUpdateOperationsInput | $Enums.OrderStatus
+  currency?: Prisma.StringFieldUpdateOperationsInput | string
+  fxRate?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  subtotal?: Prisma.IntFieldUpdateOperationsInput | number
+  shippingFee?: Prisma.IntFieldUpdateOperationsInput | number
+  total?: Prisma.IntFieldUpdateOperationsInput | number
+  paymentMethod?: Prisma.NullableEnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod | null
+  paymentRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  providerCheckoutId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  paymentUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  paymentExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  paymentCreatingAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  paymentLeaseToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  shippingAddress?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  inventoryState?: Prisma.EnumInventoryStateFieldUpdateOperationsInput | $Enums.InventoryState
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  user?: Prisma.UserUpdateOneWithoutOrdersNestedInput
+  items?: Prisma.OrderItemUpdateManyWithoutOrderNestedInput
+  paymentEvents?: Prisma.PaymentEventUpdateManyWithoutOrderNestedInput
+}
+
+export type OrderUncheckedUpdateWithoutRefundInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  orderNumber?: Prisma.StringFieldUpdateOperationsInput | string
+  checkoutKey?: Prisma.StringFieldUpdateOperationsInput | string
+  receiptTokenHash?: Prisma.StringFieldUpdateOperationsInput | string
+  userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumOrderStatusFieldUpdateOperationsInput | $Enums.OrderStatus
+  currency?: Prisma.StringFieldUpdateOperationsInput | string
+  fxRate?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  subtotal?: Prisma.IntFieldUpdateOperationsInput | number
+  shippingFee?: Prisma.IntFieldUpdateOperationsInput | number
+  total?: Prisma.IntFieldUpdateOperationsInput | number
+  paymentMethod?: Prisma.NullableEnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod | null
+  paymentRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  providerCheckoutId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  paymentUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  paymentExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  paymentCreatingAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  paymentLeaseToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  shippingAddress?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  inventoryState?: Prisma.EnumInventoryStateFieldUpdateOperationsInput | $Enums.InventoryState
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  items?: Prisma.OrderItemUncheckedUpdateManyWithoutOrderNestedInput
+  paymentEvents?: Prisma.PaymentEventUncheckedUpdateManyWithoutOrderNestedInput
 }
 
 export type OrderCreateWithoutItemsInput = {
@@ -925,13 +1321,18 @@ export type OrderCreateWithoutItemsInput = {
   total: number
   paymentMethod?: $Enums.PaymentMethod | null
   paymentRef?: string | null
+  providerCheckoutId?: string | null
   paymentUrl?: string | null
+  paymentExpiresAt?: Date | string | null
   paymentCreatingAt?: Date | string | null
   paymentLeaseToken?: string | null
   shippingAddress: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  inventoryState?: $Enums.InventoryState
   createdAt?: Date | string
   updatedAt?: Date | string
   user?: Prisma.UserCreateNestedOneWithoutOrdersInput
+  paymentEvents?: Prisma.PaymentEventCreateNestedManyWithoutOrderInput
+  refund?: Prisma.RefundCreateNestedOneWithoutOrderInput
 }
 
 export type OrderUncheckedCreateWithoutItemsInput = {
@@ -950,12 +1351,17 @@ export type OrderUncheckedCreateWithoutItemsInput = {
   total: number
   paymentMethod?: $Enums.PaymentMethod | null
   paymentRef?: string | null
+  providerCheckoutId?: string | null
   paymentUrl?: string | null
+  paymentExpiresAt?: Date | string | null
   paymentCreatingAt?: Date | string | null
   paymentLeaseToken?: string | null
   shippingAddress: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  inventoryState?: $Enums.InventoryState
   createdAt?: Date | string
   updatedAt?: Date | string
+  paymentEvents?: Prisma.PaymentEventUncheckedCreateNestedManyWithoutOrderInput
+  refund?: Prisma.RefundUncheckedCreateNestedOneWithoutOrderInput
 }
 
 export type OrderCreateOrConnectWithoutItemsInput = {
@@ -989,13 +1395,18 @@ export type OrderUpdateWithoutItemsInput = {
   total?: Prisma.IntFieldUpdateOperationsInput | number
   paymentMethod?: Prisma.NullableEnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod | null
   paymentRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  providerCheckoutId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   paymentUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  paymentExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   paymentCreatingAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   paymentLeaseToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   shippingAddress?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  inventoryState?: Prisma.EnumInventoryStateFieldUpdateOperationsInput | $Enums.InventoryState
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   user?: Prisma.UserUpdateOneWithoutOrdersNestedInput
+  paymentEvents?: Prisma.PaymentEventUpdateManyWithoutOrderNestedInput
+  refund?: Prisma.RefundUpdateOneWithoutOrderNestedInput
 }
 
 export type OrderUncheckedUpdateWithoutItemsInput = {
@@ -1014,12 +1425,17 @@ export type OrderUncheckedUpdateWithoutItemsInput = {
   total?: Prisma.IntFieldUpdateOperationsInput | number
   paymentMethod?: Prisma.NullableEnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod | null
   paymentRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  providerCheckoutId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   paymentUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  paymentExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   paymentCreatingAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   paymentLeaseToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   shippingAddress?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  inventoryState?: Prisma.EnumInventoryStateFieldUpdateOperationsInput | $Enums.InventoryState
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  paymentEvents?: Prisma.PaymentEventUncheckedUpdateManyWithoutOrderNestedInput
+  refund?: Prisma.RefundUncheckedUpdateOneWithoutOrderNestedInput
 }
 
 export type OrderCreateManyUserInput = {
@@ -1037,10 +1453,13 @@ export type OrderCreateManyUserInput = {
   total: number
   paymentMethod?: $Enums.PaymentMethod | null
   paymentRef?: string | null
+  providerCheckoutId?: string | null
   paymentUrl?: string | null
+  paymentExpiresAt?: Date | string | null
   paymentCreatingAt?: Date | string | null
   paymentLeaseToken?: string | null
   shippingAddress: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  inventoryState?: $Enums.InventoryState
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -1060,13 +1479,18 @@ export type OrderUpdateWithoutUserInput = {
   total?: Prisma.IntFieldUpdateOperationsInput | number
   paymentMethod?: Prisma.NullableEnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod | null
   paymentRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  providerCheckoutId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   paymentUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  paymentExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   paymentCreatingAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   paymentLeaseToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   shippingAddress?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  inventoryState?: Prisma.EnumInventoryStateFieldUpdateOperationsInput | $Enums.InventoryState
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   items?: Prisma.OrderItemUpdateManyWithoutOrderNestedInput
+  paymentEvents?: Prisma.PaymentEventUpdateManyWithoutOrderNestedInput
+  refund?: Prisma.RefundUpdateOneWithoutOrderNestedInput
 }
 
 export type OrderUncheckedUpdateWithoutUserInput = {
@@ -1084,13 +1508,18 @@ export type OrderUncheckedUpdateWithoutUserInput = {
   total?: Prisma.IntFieldUpdateOperationsInput | number
   paymentMethod?: Prisma.NullableEnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod | null
   paymentRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  providerCheckoutId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   paymentUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  paymentExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   paymentCreatingAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   paymentLeaseToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   shippingAddress?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  inventoryState?: Prisma.EnumInventoryStateFieldUpdateOperationsInput | $Enums.InventoryState
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   items?: Prisma.OrderItemUncheckedUpdateManyWithoutOrderNestedInput
+  paymentEvents?: Prisma.PaymentEventUncheckedUpdateManyWithoutOrderNestedInput
+  refund?: Prisma.RefundUncheckedUpdateOneWithoutOrderNestedInput
 }
 
 export type OrderUncheckedUpdateManyWithoutUserInput = {
@@ -1108,10 +1537,13 @@ export type OrderUncheckedUpdateManyWithoutUserInput = {
   total?: Prisma.IntFieldUpdateOperationsInput | number
   paymentMethod?: Prisma.NullableEnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod | null
   paymentRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  providerCheckoutId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   paymentUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  paymentExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   paymentCreatingAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   paymentLeaseToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   shippingAddress?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  inventoryState?: Prisma.EnumInventoryStateFieldUpdateOperationsInput | $Enums.InventoryState
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -1123,10 +1555,12 @@ export type OrderUncheckedUpdateManyWithoutUserInput = {
 
 export type OrderCountOutputType = {
   items: number
+  paymentEvents: number
 }
 
 export type OrderCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   items?: boolean | OrderCountOutputTypeCountItemsArgs
+  paymentEvents?: boolean | OrderCountOutputTypeCountPaymentEventsArgs
 }
 
 /**
@@ -1146,6 +1580,13 @@ export type OrderCountOutputTypeCountItemsArgs<ExtArgs extends runtime.Types.Ext
   where?: Prisma.OrderItemWhereInput
 }
 
+/**
+ * OrderCountOutputType without action
+ */
+export type OrderCountOutputTypeCountPaymentEventsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.PaymentEventWhereInput
+}
+
 
 export type OrderSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -1163,14 +1604,19 @@ export type OrderSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   total?: boolean
   paymentMethod?: boolean
   paymentRef?: boolean
+  providerCheckoutId?: boolean
   paymentUrl?: boolean
+  paymentExpiresAt?: boolean
   paymentCreatingAt?: boolean
   paymentLeaseToken?: boolean
   shippingAddress?: boolean
+  inventoryState?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   user?: boolean | Prisma.Order$userArgs<ExtArgs>
   items?: boolean | Prisma.Order$itemsArgs<ExtArgs>
+  paymentEvents?: boolean | Prisma.Order$paymentEventsArgs<ExtArgs>
+  refund?: boolean | Prisma.Order$refundArgs<ExtArgs>
   _count?: boolean | Prisma.OrderCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["order"]>
 
@@ -1190,10 +1636,13 @@ export type OrderSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   total?: boolean
   paymentMethod?: boolean
   paymentRef?: boolean
+  providerCheckoutId?: boolean
   paymentUrl?: boolean
+  paymentExpiresAt?: boolean
   paymentCreatingAt?: boolean
   paymentLeaseToken?: boolean
   shippingAddress?: boolean
+  inventoryState?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   user?: boolean | Prisma.Order$userArgs<ExtArgs>
@@ -1215,10 +1664,13 @@ export type OrderSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   total?: boolean
   paymentMethod?: boolean
   paymentRef?: boolean
+  providerCheckoutId?: boolean
   paymentUrl?: boolean
+  paymentExpiresAt?: boolean
   paymentCreatingAt?: boolean
   paymentLeaseToken?: boolean
   shippingAddress?: boolean
+  inventoryState?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   user?: boolean | Prisma.Order$userArgs<ExtArgs>
@@ -1240,18 +1692,23 @@ export type OrderSelectScalar = {
   total?: boolean
   paymentMethod?: boolean
   paymentRef?: boolean
+  providerCheckoutId?: boolean
   paymentUrl?: boolean
+  paymentExpiresAt?: boolean
   paymentCreatingAt?: boolean
   paymentLeaseToken?: boolean
   shippingAddress?: boolean
+  inventoryState?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type OrderOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "orderNumber" | "checkoutKey" | "receiptTokenHash" | "userId" | "email" | "phone" | "status" | "currency" | "fxRate" | "subtotal" | "shippingFee" | "total" | "paymentMethod" | "paymentRef" | "paymentUrl" | "paymentCreatingAt" | "paymentLeaseToken" | "shippingAddress" | "createdAt" | "updatedAt", ExtArgs["result"]["order"]>
+export type OrderOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "orderNumber" | "checkoutKey" | "receiptTokenHash" | "userId" | "email" | "phone" | "status" | "currency" | "fxRate" | "subtotal" | "shippingFee" | "total" | "paymentMethod" | "paymentRef" | "providerCheckoutId" | "paymentUrl" | "paymentExpiresAt" | "paymentCreatingAt" | "paymentLeaseToken" | "shippingAddress" | "inventoryState" | "createdAt" | "updatedAt", ExtArgs["result"]["order"]>
 export type OrderInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.Order$userArgs<ExtArgs>
   items?: boolean | Prisma.Order$itemsArgs<ExtArgs>
+  paymentEvents?: boolean | Prisma.Order$paymentEventsArgs<ExtArgs>
+  refund?: boolean | Prisma.Order$refundArgs<ExtArgs>
   _count?: boolean | Prisma.OrderCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type OrderIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1266,6 +1723,8 @@ export type $OrderPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   objects: {
     user: Prisma.$UserPayload<ExtArgs> | null
     items: Prisma.$OrderItemPayload<ExtArgs>[]
+    paymentEvents: Prisma.$PaymentEventPayload<ExtArgs>[]
+    refund: Prisma.$RefundPayload<ExtArgs> | null
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1283,10 +1742,13 @@ export type $OrderPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
     total: number
     paymentMethod: $Enums.PaymentMethod | null
     paymentRef: string | null
+    providerCheckoutId: string | null
     paymentUrl: string | null
+    paymentExpiresAt: Date | null
     paymentCreatingAt: Date | null
     paymentLeaseToken: string | null
     shippingAddress: runtime.JsonValue
+    inventoryState: $Enums.InventoryState
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["order"]>
@@ -1685,6 +2147,8 @@ export interface Prisma__OrderClient<T, Null = never, ExtArgs extends runtime.Ty
   readonly [Symbol.toStringTag]: "PrismaPromise"
   user<T extends Prisma.Order$userArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Order$userArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   items<T extends Prisma.Order$itemsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Order$itemsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$OrderItemPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  paymentEvents<T extends Prisma.Order$paymentEventsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Order$paymentEventsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PaymentEventPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  refund<T extends Prisma.Order$refundArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Order$refundArgs<ExtArgs>>): Prisma.Prisma__RefundClient<runtime.Types.Result.GetResult<Prisma.$RefundPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1729,10 +2193,13 @@ export interface OrderFieldRefs {
   readonly total: Prisma.FieldRef<"Order", 'Int'>
   readonly paymentMethod: Prisma.FieldRef<"Order", 'PaymentMethod'>
   readonly paymentRef: Prisma.FieldRef<"Order", 'String'>
+  readonly providerCheckoutId: Prisma.FieldRef<"Order", 'String'>
   readonly paymentUrl: Prisma.FieldRef<"Order", 'String'>
+  readonly paymentExpiresAt: Prisma.FieldRef<"Order", 'DateTime'>
   readonly paymentCreatingAt: Prisma.FieldRef<"Order", 'DateTime'>
   readonly paymentLeaseToken: Prisma.FieldRef<"Order", 'String'>
   readonly shippingAddress: Prisma.FieldRef<"Order", 'Json'>
+  readonly inventoryState: Prisma.FieldRef<"Order", 'InventoryState'>
   readonly createdAt: Prisma.FieldRef<"Order", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Order", 'DateTime'>
 }
@@ -2176,6 +2643,49 @@ export type Order$itemsArgs<ExtArgs extends runtime.Types.Extensions.InternalArg
   take?: number
   skip?: number
   distinct?: Prisma.OrderItemScalarFieldEnum | Prisma.OrderItemScalarFieldEnum[]
+}
+
+/**
+ * Order.paymentEvents
+ */
+export type Order$paymentEventsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the PaymentEvent
+   */
+  select?: Prisma.PaymentEventSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the PaymentEvent
+   */
+  omit?: Prisma.PaymentEventOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.PaymentEventInclude<ExtArgs> | null
+  where?: Prisma.PaymentEventWhereInput
+  orderBy?: Prisma.PaymentEventOrderByWithRelationInput | Prisma.PaymentEventOrderByWithRelationInput[]
+  cursor?: Prisma.PaymentEventWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.PaymentEventScalarFieldEnum | Prisma.PaymentEventScalarFieldEnum[]
+}
+
+/**
+ * Order.refund
+ */
+export type Order$refundArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Refund
+   */
+  select?: Prisma.RefundSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Refund
+   */
+  omit?: Prisma.RefundOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.RefundInclude<ExtArgs> | null
+  where?: Prisma.RefundWhereInput
 }
 
 /**

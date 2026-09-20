@@ -19,6 +19,7 @@ export const stripeAdapter: PaymentAdapter = {
       };
     }
     const stripe = new Stripe(key as string);
+    const expiresAt = new Date(Date.now() + 31 * 60_000);
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
       payment_method_types: ["card"],
@@ -49,10 +50,11 @@ export const stripeAdapter: PaymentAdapter = {
           : []),
       ],
       metadata: { orderId: order.id, expectedTotal: String(order.total) },
+      expires_at: Math.floor(expiresAt.getTime() / 1_000),
       success_url: `${appUrl}/${order.locale}/checkout/success?order=${order.id}`,
       cancel_url: `${appUrl}/${order.locale}/checkout?payment=cancelled`,
     }, { idempotencyKey: `checkout:${order.id}:stripe:v1` });
     if (!session.url) throw new Error("Stripe did not return a checkout URL");
-    return { redirectUrl: session.url, paymentRef: session.id };
+    return { redirectUrl: session.url, checkoutId: session.id, expiresAt };
   },
 };

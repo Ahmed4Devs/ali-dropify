@@ -2,6 +2,7 @@ import "server-only";
 
 import { prisma } from "@/lib/prisma";
 import { sendMail } from "@/lib/mail";
+import { commitOrderInventory } from "@/lib/inventory";
 import type { PaymentMethodCode } from "@/types";
 
 export function usesDummyCredential(value: string | undefined) {
@@ -16,7 +17,15 @@ export async function markOrderPaid(
   const paid = await prisma.$transaction(async (transaction) => {
     const updated = await transaction.order.updateMany({
       where: { id: orderId, status: "PENDING", paymentMethod: method },
-      data: { status: "PAID", paymentMethod: method, paymentRef },
+      data: {
+        status: "PAID",
+        paymentMethod: method,
+        paymentRef,
+        paymentUrl: null,
+        paymentExpiresAt: null,
+        paymentCreatingAt: null,
+        paymentLeaseToken: null,
+      },
     });
     if (updated.count !== 1) return null;
     const order = await transaction.order.findUnique({
@@ -24,6 +33,9 @@ export async function markOrderPaid(
       include: { items: true },
     });
     if (!order) return null;
+    if (order.inventoryState === "RESERVED") {
+      await commitOrderInventory(transaction, order.id);
+    }
     const claimedCart = await transaction.cart.findUnique({
       where: { activeCheckoutKey: order.checkoutKey },
       select: { id: true },

@@ -5,7 +5,7 @@ import { ProductCard } from "@/components/storefront/product-card";
 import { SearchTracker } from "@/components/storefront/search-tracker";
 import { Button } from "@/components/ui/button";
 import { getSelectedCurrency } from "@/lib/currency-server";
-import { getCategories, getProducts } from "@/lib/data";
+import { getCategories, getProductPage } from "@/lib/data";
 import type { Locale, ProductSort } from "@/types";
 
 export default async function ProductsPage({ params, searchParams }: PageProps<"/[locale]/products">) {
@@ -17,17 +17,15 @@ export default async function ProductsPage({ params, searchParams }: PageProps<"
   const sort: ProductSort = rawSort === "price-asc" || rawSort === "price-desc" ? rawSort : "newest";
   const requestedPage = Number(typeof queryParams.page === "string" ? queryParams.page : "1");
   const page = Number.isInteger(requestedPage) && requestedPage > 0 ? requestedPage : 1;
-  const [t, common, products, categories, currency] = await Promise.all([
+  const pageSize = 12;
+  const [t, common, productPage, categories, currency] = await Promise.all([
     getTranslations({ locale, namespace: "Products" }),
     getTranslations({ locale, namespace: "common" }),
-    getProducts(category, query, sort),
+    getProductPage(category, query, sort, page, pageSize),
     getCategories(),
     getSelectedCurrency(),
   ]);
-  const pageSize = 12;
-  const totalPages = Math.max(1, Math.ceil(products.length / pageSize));
-  const currentPage = Math.min(page, totalPages);
-  const visibleProducts = products.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+  const { products: visibleProducts, page: currentPage, totalPages } = productPage;
   const pageHref = (nextPage: number) => {
     const parameters = new URLSearchParams();
     if (category) parameters.set("category", category);

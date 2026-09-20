@@ -117,7 +117,10 @@ function productVariantsToDrafts(variants: VariantData[]): VariantDraft[] {
       Object.entries(variant.options).map(([key, value]) => [key, optionText(value)]),
     ),
     priceUsd: centsToDollars(variant.priceUsd),
+    sku: variant.sku ?? "",
     inStock: variant.inStock,
+    trackInventory: variant.trackInventory,
+    stockQuantity: String(variant.stockQuantity),
   }));
 }
 
@@ -232,7 +235,14 @@ function ProductForm({ categories, product }: ProductFormProps) {
     centsToDollars(product?.compareAtUsd),
   );
   const [costUsd, setCostUsd] = useState(centsToDollars(product?.costUsd ?? 0));
+  const [sku, setSku] = useState(product?.sku ?? "");
   const [inStock, setInStock] = useState(product?.inStock ?? true);
+  const [trackInventory, setTrackInventory] = useState(
+    product?.trackInventory ?? false,
+  );
+  const [stockQuantity, setStockQuantity] = useState(
+    String(product?.stockQuantity ?? 0),
+  );
   const [isFeatured, setIsFeatured] = useState(product?.isFeatured ?? false);
   const [aliexpressUrl, setAliexpressUrl] = useState(product?.aliexpressUrl ?? "");
   const [images, setImages] = useState<string[]>(product?.images ?? []);
@@ -371,7 +381,10 @@ function ProductForm({ categories, product }: ProductFormProps) {
           titleAr: combination.map((choice) => choice.valueAr).join(" / "),
           options: variantOptions,
           priceUsd: previous?.priceUsd ?? "",
+          sku: previous?.sku ?? "",
           inStock: previous?.inStock ?? true,
+          trackInventory: previous?.trackInventory ?? true,
+          stockQuantity: previous?.stockQuantity ?? "0",
         };
       }),
     );
@@ -393,6 +406,18 @@ function ProductForm({ categories, product }: ProductFormProps) {
       toast.error(validation("nonNegative"));
       return;
     }
+    const stockQuantityValue = Number(stockQuantity);
+    if (!Number.isInteger(stockQuantityValue) || stockQuantityValue < 0) {
+      toast.error(validation("nonNegative"));
+      return;
+    }
+    if (variants.some((variant) => {
+      const quantity = Number(variant.stockQuantity);
+      return !Number.isInteger(quantity) || quantity < 0;
+    })) {
+      toast.error(validation("nonNegative"));
+      return;
+    }
 
     const persistedVariantIds = new Set(
       product?.variants.map((variant) => variant.id) ?? [],
@@ -406,9 +431,12 @@ function ProductForm({ categories, product }: ProductFormProps) {
       priceUsd: priceInCents,
       compareAtUsd: compareAtInCents,
       costUsd: costInCents,
+      sku: sku.trim() || null,
       images,
       tags: splitValues(tags).map((tag) => tag.toLowerCase()),
       inStock,
+      trackInventory: variants.length === 0 && trackInventory,
+      stockQuantity: stockQuantityValue,
       isFeatured,
       aliexpressUrl: aliexpressUrl.trim() || null,
       categoryId: categoryId || null,
@@ -430,7 +458,10 @@ function ProductForm({ categories, product }: ProductFormProps) {
           priceUsd: variant.priceUsd.trim()
             ? dollarsToCents(variant.priceUsd)
             : null,
+          sku: variant.sku.trim() || null,
           inStock: variant.inStock,
+          trackInventory: variant.trackInventory,
+          stockQuantity: Number(variant.stockQuantity),
         };
         return persistedVariantIds.has(variant.id)
           ? { ...variantInput, id: variant.id }
@@ -545,7 +576,7 @@ function ProductForm({ categories, product }: ProductFormProps) {
       </SectionCard>
 
       <SectionCard title={t("pricingSection")} icon={<SparklesIcon />}>
-        <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+        <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
           <Field id="price-usd" label={t("price")}>
             <Input
               id="price-usd"
@@ -584,13 +615,53 @@ function ProductForm({ categories, product }: ProductFormProps) {
               onChange={(event) => setCostUsd(event.target.value)}
             />
           </Field>
+          <Field id="product-sku" label={t("sku")} hint={t("skuHint")}>
+            <Input
+              id="product-sku"
+              value={sku}
+              maxLength={80}
+              pattern="[A-Za-z0-9][A-Za-z0-9._-]*"
+              onChange={(event) => setSku(event.target.value.toUpperCase())}
+            />
+          </Field>
         </div>
-        <div className="mt-6 grid gap-3 sm:grid-cols-2">
+        <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
           <div className="flex items-center justify-between gap-4 rounded-xl border p-4">
             <Label htmlFor="product-stock" className="leading-snug">
               {t("inStock")}
             </Label>
             <Switch id="product-stock" checked={inStock} onCheckedChange={setInStock} />
+          </div>
+          <div className="grid gap-3 rounded-xl border p-4">
+            <div className="flex items-center justify-between gap-4">
+              <Label htmlFor="track-product-inventory" className="leading-snug">
+                {t("trackInventory")}
+              </Label>
+              <Switch
+                id="track-product-inventory"
+                checked={trackInventory && variants.length === 0}
+                disabled={variants.length > 0}
+                onCheckedChange={setTrackInventory}
+              />
+            </div>
+            {trackInventory && variants.length === 0 ? (
+              <Field id="product-stock-quantity" label={t("stockQuantity")}>
+                <Input
+                  id="product-stock-quantity"
+                  type="number"
+                  inputMode="numeric"
+                  min="0"
+                  step="1"
+                  value={stockQuantity}
+                  onChange={(event) => setStockQuantity(event.target.value)}
+                />
+              </Field>
+            ) : null}
+            {product?.reservedQuantity ? (
+              <p className="text-xs text-muted-foreground">
+                {t("reservedQuantity", { count: product.reservedQuantity })}
+              </p>
+            ) : null}
           </div>
           <div className="flex items-center justify-between gap-4 rounded-xl border p-4">
             <Label htmlFor="product-featured" className="leading-snug">
@@ -823,8 +894,9 @@ function ProductForm({ categories, product }: ProductFormProps) {
               <TableHeader>
                 <TableRow>
                   <TableHead>{t("variantName")}</TableHead>
+                  <TableHead>{t("sku")}</TableHead>
                   <TableHead>{t("priceOverride")}</TableHead>
-                  <TableHead>{t("variantStock")}</TableHead>
+                  <TableHead>{t("inventory")}</TableHead>
                   <TableHead className="text-end">{common("actions")}</TableHead>
                 </TableRow>
               </TableHeader>
@@ -836,6 +908,23 @@ function ProductForm({ categories, product }: ProductFormProps) {
                       <p dir="rtl" className="mt-0.5 text-start text-xs text-muted-foreground">
                         {variant.titleAr}
                       </p>
+                    </TableCell>
+                    <TableCell className="min-w-40">
+                      <Input
+                        value={variant.sku}
+                        maxLength={80}
+                        pattern="[A-Za-z0-9][A-Za-z0-9._-]*"
+                        aria-label={`${t("sku")} ${variant.titleEn}`}
+                        onChange={(event) =>
+                          setVariants((current) =>
+                            current.map((entry) =>
+                              entry.id === variant.id
+                                ? { ...entry, sku: event.target.value.toUpperCase() }
+                                : entry,
+                            ),
+                          )
+                        }
+                      />
                     </TableCell>
                     <TableCell className="min-w-40">
                       <Input
@@ -857,20 +946,61 @@ function ProductForm({ categories, product }: ProductFormProps) {
                         }
                       />
                     </TableCell>
-                    <TableCell>
-                      <Switch
-                        checked={variant.inStock}
-                        aria-label={`${t("variantStock")} ${variant.titleEn}`}
-                        onCheckedChange={(checked) =>
-                          setVariants((current) =>
-                            current.map((entry) =>
-                              entry.id === variant.id
-                                ? { ...entry, inStock: checked }
-                                : entry,
-                            ),
-                          )
-                        }
-                      />
+                    <TableCell className="min-w-48">
+                      <div className="grid gap-3">
+                        <div className="flex items-center justify-between gap-3">
+                          <Label className="text-xs">{t("trackInventory")}</Label>
+                          <Switch
+                            checked={variant.trackInventory}
+                            aria-label={`${t("trackInventory")} ${variant.titleEn}`}
+                            onCheckedChange={(checked) =>
+                              setVariants((current) =>
+                                current.map((entry) =>
+                                  entry.id === variant.id
+                                    ? { ...entry, trackInventory: checked }
+                                    : entry,
+                                ),
+                              )
+                            }
+                          />
+                        </div>
+                        {variant.trackInventory ? (
+                          <Input
+                            type="number"
+                            inputMode="numeric"
+                            min="0"
+                            step="1"
+                            value={variant.stockQuantity}
+                            aria-label={`${t("stockQuantity")} ${variant.titleEn}`}
+                            onChange={(event) =>
+                              setVariants((current) =>
+                                current.map((entry) =>
+                                  entry.id === variant.id
+                                    ? { ...entry, stockQuantity: event.target.value }
+                                    : entry,
+                                ),
+                              )
+                            }
+                          />
+                        ) : (
+                          <div className="flex items-center justify-between gap-3">
+                            <Label className="text-xs">{t("variantStock")}</Label>
+                            <Switch
+                              checked={variant.inStock}
+                              aria-label={`${t("variantStock")} ${variant.titleEn}`}
+                              onCheckedChange={(checked) =>
+                                setVariants((current) =>
+                                  current.map((entry) =>
+                                    entry.id === variant.id
+                                      ? { ...entry, inStock: checked }
+                                      : entry,
+                                  ),
+                                )
+                              }
+                            />
+                          </div>
+                        )}
+                      </div>
                     </TableCell>
                     <TableCell>
                       <div className="flex justify-end">

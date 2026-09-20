@@ -30,6 +30,8 @@ export type ProductAvgAggregateOutputType = {
   priceUsd: number | null
   compareAtUsd: number | null
   costUsd: number | null
+  stockQuantity: number | null
+  reservedQuantity: number | null
   viewsTotal: number | null
   salesCount: number | null
 }
@@ -38,6 +40,8 @@ export type ProductSumAggregateOutputType = {
   priceUsd: number | null
   compareAtUsd: number | null
   costUsd: number | null
+  stockQuantity: number | null
+  reservedQuantity: number | null
   viewsTotal: number | null
   salesCount: number | null
 }
@@ -52,7 +56,11 @@ export type ProductMinAggregateOutputType = {
   priceUsd: number | null
   compareAtUsd: number | null
   costUsd: number | null
+  sku: string | null
   inStock: boolean | null
+  trackInventory: boolean | null
+  stockQuantity: number | null
+  reservedQuantity: number | null
   isFeatured: boolean | null
   aliexpressUrl: string | null
   categoryId: string | null
@@ -72,7 +80,11 @@ export type ProductMaxAggregateOutputType = {
   priceUsd: number | null
   compareAtUsd: number | null
   costUsd: number | null
+  sku: string | null
   inStock: boolean | null
+  trackInventory: boolean | null
+  stockQuantity: number | null
+  reservedQuantity: number | null
   isFeatured: boolean | null
   aliexpressUrl: string | null
   categoryId: string | null
@@ -92,9 +104,13 @@ export type ProductCountAggregateOutputType = {
   priceUsd: number
   compareAtUsd: number
   costUsd: number
+  sku: number
   images: number
   tags: number
   inStock: number
+  trackInventory: number
+  stockQuantity: number
+  reservedQuantity: number
   isFeatured: number
   aliexpressUrl: number
   categoryId: number
@@ -110,6 +126,8 @@ export type ProductAvgAggregateInputType = {
   priceUsd?: true
   compareAtUsd?: true
   costUsd?: true
+  stockQuantity?: true
+  reservedQuantity?: true
   viewsTotal?: true
   salesCount?: true
 }
@@ -118,6 +136,8 @@ export type ProductSumAggregateInputType = {
   priceUsd?: true
   compareAtUsd?: true
   costUsd?: true
+  stockQuantity?: true
+  reservedQuantity?: true
   viewsTotal?: true
   salesCount?: true
 }
@@ -132,7 +152,11 @@ export type ProductMinAggregateInputType = {
   priceUsd?: true
   compareAtUsd?: true
   costUsd?: true
+  sku?: true
   inStock?: true
+  trackInventory?: true
+  stockQuantity?: true
+  reservedQuantity?: true
   isFeatured?: true
   aliexpressUrl?: true
   categoryId?: true
@@ -152,7 +176,11 @@ export type ProductMaxAggregateInputType = {
   priceUsd?: true
   compareAtUsd?: true
   costUsd?: true
+  sku?: true
   inStock?: true
+  trackInventory?: true
+  stockQuantity?: true
+  reservedQuantity?: true
   isFeatured?: true
   aliexpressUrl?: true
   categoryId?: true
@@ -172,9 +200,13 @@ export type ProductCountAggregateInputType = {
   priceUsd?: true
   compareAtUsd?: true
   costUsd?: true
+  sku?: true
   images?: true
   tags?: true
   inStock?: true
+  trackInventory?: true
+  stockQuantity?: true
+  reservedQuantity?: true
   isFeatured?: true
   aliexpressUrl?: true
   categoryId?: true
@@ -281,9 +313,13 @@ export type ProductGroupByOutputType = {
   priceUsd: number
   compareAtUsd: number | null
   costUsd: number
+  sku: string | null
   images: string[]
   tags: string[]
   inStock: boolean
+  trackInventory: boolean
+  stockQuantity: number
+  reservedQuantity: number
   isFeatured: boolean
   aliexpressUrl: string | null
   categoryId: string | null
@@ -326,9 +362,13 @@ export type ProductWhereInput = {
   priceUsd?: Prisma.IntFilter<"Product"> | number
   compareAtUsd?: Prisma.IntNullableFilter<"Product"> | number | null
   costUsd?: Prisma.IntFilter<"Product"> | number
+  sku?: Prisma.StringNullableFilter<"Product"> | string | null
   images?: Prisma.StringNullableListFilter<"Product">
   tags?: Prisma.StringNullableListFilter<"Product">
   inStock?: Prisma.BoolFilter<"Product"> | boolean
+  trackInventory?: Prisma.BoolFilter<"Product"> | boolean
+  stockQuantity?: Prisma.IntFilter<"Product"> | number
+  reservedQuantity?: Prisma.IntFilter<"Product"> | number
   isFeatured?: Prisma.BoolFilter<"Product"> | boolean
   aliexpressUrl?: Prisma.StringNullableFilter<"Product"> | string | null
   categoryId?: Prisma.StringNullableFilter<"Product"> | string | null
@@ -354,9 +394,13 @@ export type ProductOrderByWithRelationInput = {
   priceUsd?: Prisma.SortOrder
   compareAtUsd?: Prisma.SortOrderInput | Prisma.SortOrder
   costUsd?: Prisma.SortOrder
+  sku?: Prisma.SortOrderInput | Prisma.SortOrder
   images?: Prisma.SortOrder
   tags?: Prisma.SortOrder
   inStock?: Prisma.SortOrder
+  trackInventory?: Prisma.SortOrder
+  stockQuantity?: Prisma.SortOrder
+  reservedQuantity?: Prisma.SortOrder
   isFeatured?: Prisma.SortOrder
   aliexpressUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   categoryId?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -375,6 +419,7 @@ export type ProductOrderByWithRelationInput = {
 export type ProductWhereUniqueInput = Prisma.AtLeast<{
   id?: string
   slug?: string
+  sku?: string
   AND?: Prisma.ProductWhereInput | Prisma.ProductWhereInput[]
   OR?: Prisma.ProductWhereInput[]
   NOT?: Prisma.ProductWhereInput | Prisma.ProductWhereInput[]
@@ -388,6 +433,9 @@ export type ProductWhereUniqueInput = Prisma.AtLeast<{
   images?: Prisma.StringNullableListFilter<"Product">
   tags?: Prisma.StringNullableListFilter<"Product">
   inStock?: Prisma.BoolFilter<"Product"> | boolean
+  trackInventory?: Prisma.BoolFilter<"Product"> | boolean
+  stockQuantity?: Prisma.IntFilter<"Product"> | number
+  reservedQuantity?: Prisma.IntFilter<"Product"> | number
   isFeatured?: Prisma.BoolFilter<"Product"> | boolean
   aliexpressUrl?: Prisma.StringNullableFilter<"Product"> | string | null
   categoryId?: Prisma.StringNullableFilter<"Product"> | string | null
@@ -401,7 +449,7 @@ export type ProductWhereUniqueInput = Prisma.AtLeast<{
   reviews?: Prisma.ReviewListRelationFilter
   orderItems?: Prisma.OrderItemListRelationFilter
   productViews?: Prisma.ProductViewListRelationFilter
-}, "id" | "slug">
+}, "id" | "slug" | "sku">
 
 export type ProductOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
@@ -413,9 +461,13 @@ export type ProductOrderByWithAggregationInput = {
   priceUsd?: Prisma.SortOrder
   compareAtUsd?: Prisma.SortOrderInput | Prisma.SortOrder
   costUsd?: Prisma.SortOrder
+  sku?: Prisma.SortOrderInput | Prisma.SortOrder
   images?: Prisma.SortOrder
   tags?: Prisma.SortOrder
   inStock?: Prisma.SortOrder
+  trackInventory?: Prisma.SortOrder
+  stockQuantity?: Prisma.SortOrder
+  reservedQuantity?: Prisma.SortOrder
   isFeatured?: Prisma.SortOrder
   aliexpressUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   categoryId?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -443,9 +495,13 @@ export type ProductScalarWhereWithAggregatesInput = {
   priceUsd?: Prisma.IntWithAggregatesFilter<"Product"> | number
   compareAtUsd?: Prisma.IntNullableWithAggregatesFilter<"Product"> | number | null
   costUsd?: Prisma.IntWithAggregatesFilter<"Product"> | number
+  sku?: Prisma.StringNullableWithAggregatesFilter<"Product"> | string | null
   images?: Prisma.StringNullableListFilter<"Product">
   tags?: Prisma.StringNullableListFilter<"Product">
   inStock?: Prisma.BoolWithAggregatesFilter<"Product"> | boolean
+  trackInventory?: Prisma.BoolWithAggregatesFilter<"Product"> | boolean
+  stockQuantity?: Prisma.IntWithAggregatesFilter<"Product"> | number
+  reservedQuantity?: Prisma.IntWithAggregatesFilter<"Product"> | number
   isFeatured?: Prisma.BoolWithAggregatesFilter<"Product"> | boolean
   aliexpressUrl?: Prisma.StringNullableWithAggregatesFilter<"Product"> | string | null
   categoryId?: Prisma.StringNullableWithAggregatesFilter<"Product"> | string | null
@@ -465,9 +521,13 @@ export type ProductCreateInput = {
   priceUsd: number
   compareAtUsd?: number | null
   costUsd?: number
+  sku?: string | null
   images?: Prisma.ProductCreateimagesInput | string[]
   tags?: Prisma.ProductCreatetagsInput | string[]
   inStock?: boolean
+  trackInventory?: boolean
+  stockQuantity?: number
+  reservedQuantity?: number
   isFeatured?: boolean
   aliexpressUrl?: string | null
   viewsTotal?: number
@@ -492,9 +552,13 @@ export type ProductUncheckedCreateInput = {
   priceUsd: number
   compareAtUsd?: number | null
   costUsd?: number
+  sku?: string | null
   images?: Prisma.ProductCreateimagesInput | string[]
   tags?: Prisma.ProductCreatetagsInput | string[]
   inStock?: boolean
+  trackInventory?: boolean
+  stockQuantity?: number
+  reservedQuantity?: number
   isFeatured?: boolean
   aliexpressUrl?: string | null
   categoryId?: string | null
@@ -519,9 +583,13 @@ export type ProductUpdateInput = {
   priceUsd?: Prisma.IntFieldUpdateOperationsInput | number
   compareAtUsd?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   costUsd?: Prisma.IntFieldUpdateOperationsInput | number
+  sku?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   images?: Prisma.ProductUpdateimagesInput | string[]
   tags?: Prisma.ProductUpdatetagsInput | string[]
   inStock?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  trackInventory?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
+  reservedQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   aliexpressUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   viewsTotal?: Prisma.IntFieldUpdateOperationsInput | number
@@ -546,9 +614,13 @@ export type ProductUncheckedUpdateInput = {
   priceUsd?: Prisma.IntFieldUpdateOperationsInput | number
   compareAtUsd?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   costUsd?: Prisma.IntFieldUpdateOperationsInput | number
+  sku?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   images?: Prisma.ProductUpdateimagesInput | string[]
   tags?: Prisma.ProductUpdatetagsInput | string[]
   inStock?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  trackInventory?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
+  reservedQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   aliexpressUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   categoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -573,9 +645,13 @@ export type ProductCreateManyInput = {
   priceUsd: number
   compareAtUsd?: number | null
   costUsd?: number
+  sku?: string | null
   images?: Prisma.ProductCreateimagesInput | string[]
   tags?: Prisma.ProductCreatetagsInput | string[]
   inStock?: boolean
+  trackInventory?: boolean
+  stockQuantity?: number
+  reservedQuantity?: number
   isFeatured?: boolean
   aliexpressUrl?: string | null
   categoryId?: string | null
@@ -595,9 +671,13 @@ export type ProductUpdateManyMutationInput = {
   priceUsd?: Prisma.IntFieldUpdateOperationsInput | number
   compareAtUsd?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   costUsd?: Prisma.IntFieldUpdateOperationsInput | number
+  sku?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   images?: Prisma.ProductUpdateimagesInput | string[]
   tags?: Prisma.ProductUpdatetagsInput | string[]
   inStock?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  trackInventory?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
+  reservedQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   aliexpressUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   viewsTotal?: Prisma.IntFieldUpdateOperationsInput | number
@@ -616,9 +696,13 @@ export type ProductUncheckedUpdateManyInput = {
   priceUsd?: Prisma.IntFieldUpdateOperationsInput | number
   compareAtUsd?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   costUsd?: Prisma.IntFieldUpdateOperationsInput | number
+  sku?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   images?: Prisma.ProductUpdateimagesInput | string[]
   tags?: Prisma.ProductUpdatetagsInput | string[]
   inStock?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  trackInventory?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
+  reservedQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   aliexpressUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   categoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -656,9 +740,13 @@ export type ProductCountOrderByAggregateInput = {
   priceUsd?: Prisma.SortOrder
   compareAtUsd?: Prisma.SortOrder
   costUsd?: Prisma.SortOrder
+  sku?: Prisma.SortOrder
   images?: Prisma.SortOrder
   tags?: Prisma.SortOrder
   inStock?: Prisma.SortOrder
+  trackInventory?: Prisma.SortOrder
+  stockQuantity?: Prisma.SortOrder
+  reservedQuantity?: Prisma.SortOrder
   isFeatured?: Prisma.SortOrder
   aliexpressUrl?: Prisma.SortOrder
   categoryId?: Prisma.SortOrder
@@ -672,6 +760,8 @@ export type ProductAvgOrderByAggregateInput = {
   priceUsd?: Prisma.SortOrder
   compareAtUsd?: Prisma.SortOrder
   costUsd?: Prisma.SortOrder
+  stockQuantity?: Prisma.SortOrder
+  reservedQuantity?: Prisma.SortOrder
   viewsTotal?: Prisma.SortOrder
   salesCount?: Prisma.SortOrder
 }
@@ -686,7 +776,11 @@ export type ProductMaxOrderByAggregateInput = {
   priceUsd?: Prisma.SortOrder
   compareAtUsd?: Prisma.SortOrder
   costUsd?: Prisma.SortOrder
+  sku?: Prisma.SortOrder
   inStock?: Prisma.SortOrder
+  trackInventory?: Prisma.SortOrder
+  stockQuantity?: Prisma.SortOrder
+  reservedQuantity?: Prisma.SortOrder
   isFeatured?: Prisma.SortOrder
   aliexpressUrl?: Prisma.SortOrder
   categoryId?: Prisma.SortOrder
@@ -706,7 +800,11 @@ export type ProductMinOrderByAggregateInput = {
   priceUsd?: Prisma.SortOrder
   compareAtUsd?: Prisma.SortOrder
   costUsd?: Prisma.SortOrder
+  sku?: Prisma.SortOrder
   inStock?: Prisma.SortOrder
+  trackInventory?: Prisma.SortOrder
+  stockQuantity?: Prisma.SortOrder
+  reservedQuantity?: Prisma.SortOrder
   isFeatured?: Prisma.SortOrder
   aliexpressUrl?: Prisma.SortOrder
   categoryId?: Prisma.SortOrder
@@ -720,6 +818,8 @@ export type ProductSumOrderByAggregateInput = {
   priceUsd?: Prisma.SortOrder
   compareAtUsd?: Prisma.SortOrder
   costUsd?: Prisma.SortOrder
+  stockQuantity?: Prisma.SortOrder
+  reservedQuantity?: Prisma.SortOrder
   viewsTotal?: Prisma.SortOrder
   salesCount?: Prisma.SortOrder
 }
@@ -884,9 +984,13 @@ export type ProductCreateWithoutCategoryInput = {
   priceUsd: number
   compareAtUsd?: number | null
   costUsd?: number
+  sku?: string | null
   images?: Prisma.ProductCreateimagesInput | string[]
   tags?: Prisma.ProductCreatetagsInput | string[]
   inStock?: boolean
+  trackInventory?: boolean
+  stockQuantity?: number
+  reservedQuantity?: number
   isFeatured?: boolean
   aliexpressUrl?: string | null
   viewsTotal?: number
@@ -910,9 +1014,13 @@ export type ProductUncheckedCreateWithoutCategoryInput = {
   priceUsd: number
   compareAtUsd?: number | null
   costUsd?: number
+  sku?: string | null
   images?: Prisma.ProductCreateimagesInput | string[]
   tags?: Prisma.ProductCreatetagsInput | string[]
   inStock?: boolean
+  trackInventory?: boolean
+  stockQuantity?: number
+  reservedQuantity?: number
   isFeatured?: boolean
   aliexpressUrl?: string | null
   viewsTotal?: number
@@ -965,9 +1073,13 @@ export type ProductScalarWhereInput = {
   priceUsd?: Prisma.IntFilter<"Product"> | number
   compareAtUsd?: Prisma.IntNullableFilter<"Product"> | number | null
   costUsd?: Prisma.IntFilter<"Product"> | number
+  sku?: Prisma.StringNullableFilter<"Product"> | string | null
   images?: Prisma.StringNullableListFilter<"Product">
   tags?: Prisma.StringNullableListFilter<"Product">
   inStock?: Prisma.BoolFilter<"Product"> | boolean
+  trackInventory?: Prisma.BoolFilter<"Product"> | boolean
+  stockQuantity?: Prisma.IntFilter<"Product"> | number
+  reservedQuantity?: Prisma.IntFilter<"Product"> | number
   isFeatured?: Prisma.BoolFilter<"Product"> | boolean
   aliexpressUrl?: Prisma.StringNullableFilter<"Product"> | string | null
   categoryId?: Prisma.StringNullableFilter<"Product"> | string | null
@@ -987,9 +1099,13 @@ export type ProductCreateWithoutVariantsInput = {
   priceUsd: number
   compareAtUsd?: number | null
   costUsd?: number
+  sku?: string | null
   images?: Prisma.ProductCreateimagesInput | string[]
   tags?: Prisma.ProductCreatetagsInput | string[]
   inStock?: boolean
+  trackInventory?: boolean
+  stockQuantity?: number
+  reservedQuantity?: number
   isFeatured?: boolean
   aliexpressUrl?: string | null
   viewsTotal?: number
@@ -1013,9 +1129,13 @@ export type ProductUncheckedCreateWithoutVariantsInput = {
   priceUsd: number
   compareAtUsd?: number | null
   costUsd?: number
+  sku?: string | null
   images?: Prisma.ProductCreateimagesInput | string[]
   tags?: Prisma.ProductCreatetagsInput | string[]
   inStock?: boolean
+  trackInventory?: boolean
+  stockQuantity?: number
+  reservedQuantity?: number
   isFeatured?: boolean
   aliexpressUrl?: string | null
   categoryId?: string | null
@@ -1055,9 +1175,13 @@ export type ProductUpdateWithoutVariantsInput = {
   priceUsd?: Prisma.IntFieldUpdateOperationsInput | number
   compareAtUsd?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   costUsd?: Prisma.IntFieldUpdateOperationsInput | number
+  sku?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   images?: Prisma.ProductUpdateimagesInput | string[]
   tags?: Prisma.ProductUpdatetagsInput | string[]
   inStock?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  trackInventory?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
+  reservedQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   aliexpressUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   viewsTotal?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1081,9 +1205,13 @@ export type ProductUncheckedUpdateWithoutVariantsInput = {
   priceUsd?: Prisma.IntFieldUpdateOperationsInput | number
   compareAtUsd?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   costUsd?: Prisma.IntFieldUpdateOperationsInput | number
+  sku?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   images?: Prisma.ProductUpdateimagesInput | string[]
   tags?: Prisma.ProductUpdatetagsInput | string[]
   inStock?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  trackInventory?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
+  reservedQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   aliexpressUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   categoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1107,9 +1235,13 @@ export type ProductCreateWithoutCartItemsInput = {
   priceUsd: number
   compareAtUsd?: number | null
   costUsd?: number
+  sku?: string | null
   images?: Prisma.ProductCreateimagesInput | string[]
   tags?: Prisma.ProductCreatetagsInput | string[]
   inStock?: boolean
+  trackInventory?: boolean
+  stockQuantity?: number
+  reservedQuantity?: number
   isFeatured?: boolean
   aliexpressUrl?: string | null
   viewsTotal?: number
@@ -1133,9 +1265,13 @@ export type ProductUncheckedCreateWithoutCartItemsInput = {
   priceUsd: number
   compareAtUsd?: number | null
   costUsd?: number
+  sku?: string | null
   images?: Prisma.ProductCreateimagesInput | string[]
   tags?: Prisma.ProductCreatetagsInput | string[]
   inStock?: boolean
+  trackInventory?: boolean
+  stockQuantity?: number
+  reservedQuantity?: number
   isFeatured?: boolean
   aliexpressUrl?: string | null
   categoryId?: string | null
@@ -1175,9 +1311,13 @@ export type ProductUpdateWithoutCartItemsInput = {
   priceUsd?: Prisma.IntFieldUpdateOperationsInput | number
   compareAtUsd?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   costUsd?: Prisma.IntFieldUpdateOperationsInput | number
+  sku?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   images?: Prisma.ProductUpdateimagesInput | string[]
   tags?: Prisma.ProductUpdatetagsInput | string[]
   inStock?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  trackInventory?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
+  reservedQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   aliexpressUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   viewsTotal?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1201,9 +1341,13 @@ export type ProductUncheckedUpdateWithoutCartItemsInput = {
   priceUsd?: Prisma.IntFieldUpdateOperationsInput | number
   compareAtUsd?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   costUsd?: Prisma.IntFieldUpdateOperationsInput | number
+  sku?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   images?: Prisma.ProductUpdateimagesInput | string[]
   tags?: Prisma.ProductUpdatetagsInput | string[]
   inStock?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  trackInventory?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
+  reservedQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   aliexpressUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   categoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1227,9 +1371,13 @@ export type ProductCreateWithoutOrderItemsInput = {
   priceUsd: number
   compareAtUsd?: number | null
   costUsd?: number
+  sku?: string | null
   images?: Prisma.ProductCreateimagesInput | string[]
   tags?: Prisma.ProductCreatetagsInput | string[]
   inStock?: boolean
+  trackInventory?: boolean
+  stockQuantity?: number
+  reservedQuantity?: number
   isFeatured?: boolean
   aliexpressUrl?: string | null
   viewsTotal?: number
@@ -1253,9 +1401,13 @@ export type ProductUncheckedCreateWithoutOrderItemsInput = {
   priceUsd: number
   compareAtUsd?: number | null
   costUsd?: number
+  sku?: string | null
   images?: Prisma.ProductCreateimagesInput | string[]
   tags?: Prisma.ProductCreatetagsInput | string[]
   inStock?: boolean
+  trackInventory?: boolean
+  stockQuantity?: number
+  reservedQuantity?: number
   isFeatured?: boolean
   aliexpressUrl?: string | null
   categoryId?: string | null
@@ -1295,9 +1447,13 @@ export type ProductUpdateWithoutOrderItemsInput = {
   priceUsd?: Prisma.IntFieldUpdateOperationsInput | number
   compareAtUsd?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   costUsd?: Prisma.IntFieldUpdateOperationsInput | number
+  sku?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   images?: Prisma.ProductUpdateimagesInput | string[]
   tags?: Prisma.ProductUpdatetagsInput | string[]
   inStock?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  trackInventory?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
+  reservedQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   aliexpressUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   viewsTotal?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1321,9 +1477,13 @@ export type ProductUncheckedUpdateWithoutOrderItemsInput = {
   priceUsd?: Prisma.IntFieldUpdateOperationsInput | number
   compareAtUsd?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   costUsd?: Prisma.IntFieldUpdateOperationsInput | number
+  sku?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   images?: Prisma.ProductUpdateimagesInput | string[]
   tags?: Prisma.ProductUpdatetagsInput | string[]
   inStock?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  trackInventory?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
+  reservedQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   aliexpressUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   categoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1347,9 +1507,13 @@ export type ProductCreateWithoutReviewsInput = {
   priceUsd: number
   compareAtUsd?: number | null
   costUsd?: number
+  sku?: string | null
   images?: Prisma.ProductCreateimagesInput | string[]
   tags?: Prisma.ProductCreatetagsInput | string[]
   inStock?: boolean
+  trackInventory?: boolean
+  stockQuantity?: number
+  reservedQuantity?: number
   isFeatured?: boolean
   aliexpressUrl?: string | null
   viewsTotal?: number
@@ -1373,9 +1537,13 @@ export type ProductUncheckedCreateWithoutReviewsInput = {
   priceUsd: number
   compareAtUsd?: number | null
   costUsd?: number
+  sku?: string | null
   images?: Prisma.ProductCreateimagesInput | string[]
   tags?: Prisma.ProductCreatetagsInput | string[]
   inStock?: boolean
+  trackInventory?: boolean
+  stockQuantity?: number
+  reservedQuantity?: number
   isFeatured?: boolean
   aliexpressUrl?: string | null
   categoryId?: string | null
@@ -1415,9 +1583,13 @@ export type ProductUpdateWithoutReviewsInput = {
   priceUsd?: Prisma.IntFieldUpdateOperationsInput | number
   compareAtUsd?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   costUsd?: Prisma.IntFieldUpdateOperationsInput | number
+  sku?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   images?: Prisma.ProductUpdateimagesInput | string[]
   tags?: Prisma.ProductUpdatetagsInput | string[]
   inStock?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  trackInventory?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
+  reservedQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   aliexpressUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   viewsTotal?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1441,9 +1613,13 @@ export type ProductUncheckedUpdateWithoutReviewsInput = {
   priceUsd?: Prisma.IntFieldUpdateOperationsInput | number
   compareAtUsd?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   costUsd?: Prisma.IntFieldUpdateOperationsInput | number
+  sku?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   images?: Prisma.ProductUpdateimagesInput | string[]
   tags?: Prisma.ProductUpdatetagsInput | string[]
   inStock?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  trackInventory?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
+  reservedQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   aliexpressUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   categoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1467,9 +1643,13 @@ export type ProductCreateWithoutProductViewsInput = {
   priceUsd: number
   compareAtUsd?: number | null
   costUsd?: number
+  sku?: string | null
   images?: Prisma.ProductCreateimagesInput | string[]
   tags?: Prisma.ProductCreatetagsInput | string[]
   inStock?: boolean
+  trackInventory?: boolean
+  stockQuantity?: number
+  reservedQuantity?: number
   isFeatured?: boolean
   aliexpressUrl?: string | null
   viewsTotal?: number
@@ -1493,9 +1673,13 @@ export type ProductUncheckedCreateWithoutProductViewsInput = {
   priceUsd: number
   compareAtUsd?: number | null
   costUsd?: number
+  sku?: string | null
   images?: Prisma.ProductCreateimagesInput | string[]
   tags?: Prisma.ProductCreatetagsInput | string[]
   inStock?: boolean
+  trackInventory?: boolean
+  stockQuantity?: number
+  reservedQuantity?: number
   isFeatured?: boolean
   aliexpressUrl?: string | null
   categoryId?: string | null
@@ -1535,9 +1719,13 @@ export type ProductUpdateWithoutProductViewsInput = {
   priceUsd?: Prisma.IntFieldUpdateOperationsInput | number
   compareAtUsd?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   costUsd?: Prisma.IntFieldUpdateOperationsInput | number
+  sku?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   images?: Prisma.ProductUpdateimagesInput | string[]
   tags?: Prisma.ProductUpdatetagsInput | string[]
   inStock?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  trackInventory?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
+  reservedQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   aliexpressUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   viewsTotal?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1561,9 +1749,13 @@ export type ProductUncheckedUpdateWithoutProductViewsInput = {
   priceUsd?: Prisma.IntFieldUpdateOperationsInput | number
   compareAtUsd?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   costUsd?: Prisma.IntFieldUpdateOperationsInput | number
+  sku?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   images?: Prisma.ProductUpdateimagesInput | string[]
   tags?: Prisma.ProductUpdatetagsInput | string[]
   inStock?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  trackInventory?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
+  reservedQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   aliexpressUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   categoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1587,9 +1779,13 @@ export type ProductCreateManyCategoryInput = {
   priceUsd: number
   compareAtUsd?: number | null
   costUsd?: number
+  sku?: string | null
   images?: Prisma.ProductCreateimagesInput | string[]
   tags?: Prisma.ProductCreatetagsInput | string[]
   inStock?: boolean
+  trackInventory?: boolean
+  stockQuantity?: number
+  reservedQuantity?: number
   isFeatured?: boolean
   aliexpressUrl?: string | null
   viewsTotal?: number
@@ -1608,9 +1804,13 @@ export type ProductUpdateWithoutCategoryInput = {
   priceUsd?: Prisma.IntFieldUpdateOperationsInput | number
   compareAtUsd?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   costUsd?: Prisma.IntFieldUpdateOperationsInput | number
+  sku?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   images?: Prisma.ProductUpdateimagesInput | string[]
   tags?: Prisma.ProductUpdatetagsInput | string[]
   inStock?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  trackInventory?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
+  reservedQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   aliexpressUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   viewsTotal?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1634,9 +1834,13 @@ export type ProductUncheckedUpdateWithoutCategoryInput = {
   priceUsd?: Prisma.IntFieldUpdateOperationsInput | number
   compareAtUsd?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   costUsd?: Prisma.IntFieldUpdateOperationsInput | number
+  sku?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   images?: Prisma.ProductUpdateimagesInput | string[]
   tags?: Prisma.ProductUpdatetagsInput | string[]
   inStock?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  trackInventory?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
+  reservedQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   aliexpressUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   viewsTotal?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1660,9 +1864,13 @@ export type ProductUncheckedUpdateManyWithoutCategoryInput = {
   priceUsd?: Prisma.IntFieldUpdateOperationsInput | number
   compareAtUsd?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   costUsd?: Prisma.IntFieldUpdateOperationsInput | number
+  sku?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   images?: Prisma.ProductUpdateimagesInput | string[]
   tags?: Prisma.ProductUpdatetagsInput | string[]
   inStock?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  trackInventory?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
+  reservedQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   aliexpressUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   viewsTotal?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1748,9 +1956,13 @@ export type ProductSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   priceUsd?: boolean
   compareAtUsd?: boolean
   costUsd?: boolean
+  sku?: boolean
   images?: boolean
   tags?: boolean
   inStock?: boolean
+  trackInventory?: boolean
+  stockQuantity?: boolean
+  reservedQuantity?: boolean
   isFeatured?: boolean
   aliexpressUrl?: boolean
   categoryId?: boolean
@@ -1777,9 +1989,13 @@ export type ProductSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exten
   priceUsd?: boolean
   compareAtUsd?: boolean
   costUsd?: boolean
+  sku?: boolean
   images?: boolean
   tags?: boolean
   inStock?: boolean
+  trackInventory?: boolean
+  stockQuantity?: boolean
+  reservedQuantity?: boolean
   isFeatured?: boolean
   aliexpressUrl?: boolean
   categoryId?: boolean
@@ -1800,9 +2016,13 @@ export type ProductSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
   priceUsd?: boolean
   compareAtUsd?: boolean
   costUsd?: boolean
+  sku?: boolean
   images?: boolean
   tags?: boolean
   inStock?: boolean
+  trackInventory?: boolean
+  stockQuantity?: boolean
+  reservedQuantity?: boolean
   isFeatured?: boolean
   aliexpressUrl?: boolean
   categoryId?: boolean
@@ -1823,9 +2043,13 @@ export type ProductSelectScalar = {
   priceUsd?: boolean
   compareAtUsd?: boolean
   costUsd?: boolean
+  sku?: boolean
   images?: boolean
   tags?: boolean
   inStock?: boolean
+  trackInventory?: boolean
+  stockQuantity?: boolean
+  reservedQuantity?: boolean
   isFeatured?: boolean
   aliexpressUrl?: boolean
   categoryId?: boolean
@@ -1835,7 +2059,7 @@ export type ProductSelectScalar = {
   updatedAt?: boolean
 }
 
-export type ProductOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "slug" | "titleEn" | "titleAr" | "descriptionEn" | "descriptionAr" | "priceUsd" | "compareAtUsd" | "costUsd" | "images" | "tags" | "inStock" | "isFeatured" | "aliexpressUrl" | "categoryId" | "viewsTotal" | "salesCount" | "createdAt" | "updatedAt", ExtArgs["result"]["product"]>
+export type ProductOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "slug" | "titleEn" | "titleAr" | "descriptionEn" | "descriptionAr" | "priceUsd" | "compareAtUsd" | "costUsd" | "sku" | "images" | "tags" | "inStock" | "trackInventory" | "stockQuantity" | "reservedQuantity" | "isFeatured" | "aliexpressUrl" | "categoryId" | "viewsTotal" | "salesCount" | "createdAt" | "updatedAt", ExtArgs["result"]["product"]>
 export type ProductInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   category?: boolean | Prisma.Product$categoryArgs<ExtArgs>
   variants?: boolean | Prisma.Product$variantsArgs<ExtArgs>
@@ -1872,9 +2096,13 @@ export type $ProductPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     priceUsd: number
     compareAtUsd: number | null
     costUsd: number
+    sku: string | null
     images: string[]
     tags: string[]
     inStock: boolean
+    trackInventory: boolean
+    stockQuantity: number
+    reservedQuantity: number
     isFeatured: boolean
     aliexpressUrl: string | null
     categoryId: string | null
@@ -2320,9 +2548,13 @@ export interface ProductFieldRefs {
   readonly priceUsd: Prisma.FieldRef<"Product", 'Int'>
   readonly compareAtUsd: Prisma.FieldRef<"Product", 'Int'>
   readonly costUsd: Prisma.FieldRef<"Product", 'Int'>
+  readonly sku: Prisma.FieldRef<"Product", 'String'>
   readonly images: Prisma.FieldRef<"Product", 'String[]'>
   readonly tags: Prisma.FieldRef<"Product", 'String[]'>
   readonly inStock: Prisma.FieldRef<"Product", 'Boolean'>
+  readonly trackInventory: Prisma.FieldRef<"Product", 'Boolean'>
+  readonly stockQuantity: Prisma.FieldRef<"Product", 'Int'>
+  readonly reservedQuantity: Prisma.FieldRef<"Product", 'Int'>
   readonly isFeatured: Prisma.FieldRef<"Product", 'Boolean'>
   readonly aliexpressUrl: Prisma.FieldRef<"Product", 'String'>
   readonly categoryId: Prisma.FieldRef<"Product", 'String'>

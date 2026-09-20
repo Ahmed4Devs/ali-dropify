@@ -3,6 +3,7 @@ import "server-only";
 import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/dal";
+import { isInventoryAvailable } from "@/lib/inventory";
 import type { CartSummary, Locale } from "@/types";
 
 const emptyCart: CartSummary = {
@@ -40,7 +41,7 @@ export async function findCart(locale: Locale = "en") {
         : null,
       unitPriceUsd: item.variant?.priceUsd ?? item.product.priceUsd,
       quantity: item.quantity,
-      inStock: item.product.inStock && (item.variant?.inStock ?? true),
+      inStock: isInventoryAvailable(item),
     }));
     return {
       id: cart.id,

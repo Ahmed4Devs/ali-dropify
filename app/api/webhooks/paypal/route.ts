@@ -1,12 +1,10 @@
 import { NextResponse } from "next/server";
 import { getPayPalAccessToken, getPayPalBaseUrl } from "@/lib/payments/paypal";
-import { markOrderPaid, usesDummyCredential } from "@/lib/payments/shared";
+import { claimPaymentEvent, finishPaymentEvent } from "@/lib/payments/events";
+import { reconcilePendingOrder } from "@/lib/payments/lifecycle";
+import { usesDummyCredential } from "@/lib/payments/shared";
 import { prisma } from "@/lib/prisma";
-
-function decimalToMinorUnits(value: string) {
-  const [whole = "0", fraction = ""] = value.split(".");
-  return Number.parseInt(whole, 10) * 100 + Number.parseInt(fraction.padEnd(2, "0").slice(0, 2), 10);
-}
+import { decimalToMinorUnits } from "@/lib/payments/amounts";
 
 async function getPayPalOrder(orderToken: string) {
   if (usesDummyCredential(process.env.PAYPAL_CLIENT_ID)) return null;
@@ -23,6 +21,7 @@ async function getPayPalOrder(orderToken: string) {
       custom_id?: string;
       reference_id?: string;
       amount?: { currency_code?: string; value?: string };
+      payments?: { captures?: Array<{ id?: string; status?: string }> };
     }>;
   };
 }
@@ -76,7 +75,7 @@ export async function GET(request: Request) {
     const amount = order?.purchase_units?.[0]?.amount;
     const databaseOrder = await prisma.order.findUnique({ where: { id: expectedOrderId } });
     if (
-      !capture.ok ||
+      (!capture.ok && capture.status !== 422) ||
       !databaseOrder ||
       order?.status !== "COMPLETED" ||
       linkedOrder !== expectedOrderId ||
@@ -84,7 +83,10 @@ export async function GET(request: Request) {
       !amount.value ||
       decimalToMinorUnits(amount.value) !== databaseOrder.total
     ) throw new Error("Capture not confirmed");
-    await markOrderPaid(expectedOrderId, "PAYPAL", token);
+    const reconciled = await reconcilePendingOrder(expectedOrderId, { force: true });
+    if (reconciled.state !== "paid" && reconciled.state !== "unchanged") {
+      throw new Error("Captured payment could not be reconciled");
+    }
     return NextResponse.redirect(new URL(`/${locale}/checkout/success?order=${expectedOrderId}`, request.url));
   } catch (error) {
     console.error("PayPal capture failed", error);
@@ -93,17 +95,28 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
+  let claimedEventId: string | null = null;
   try {
     const rawBody = await request.text();
     const body = JSON.parse(rawBody) as {
+      id?: string;
       event_type?: string;
       resource?: { id?: string; custom_id?: string; supplementary_data?: { related_ids?: { order_id?: string } } };
     };
     if (!(await verifyPayPalWebhook(request, body as Record<string, unknown>))) {
       return Response.json({ error: "Invalid PayPal signature" }, { status: 400 });
     }
+    if (!body.id || !body.event_type) {
+      return Response.json({ error: "Invalid PayPal event" }, { status: 400 });
+    }
     const paypalOrderId = body.resource?.supplementary_data?.related_ids?.order_id ?? body.resource?.id;
     if (!paypalOrderId || body.event_type !== "PAYMENT.CAPTURE.COMPLETED") {
+      const ignoredId = await claimPaymentEvent({
+        provider: "PAYPAL",
+        externalId: body.id,
+        type: body.event_type,
+      });
+      if (ignoredId) await finishPaymentEvent(ignoredId, "IGNORED");
       return Response.json({ received: true });
     }
     const order = await getPayPalOrder(paypalOrderId);
@@ -123,10 +136,29 @@ export async function POST(request: Request) {
     ) {
       return Response.json({ error: "Payment not confirmed" }, { status: 400 });
     }
-    await markOrderPaid(internalOrderId, "PAYPAL", paypalOrderId);
+    claimedEventId = await claimPaymentEvent({
+      provider: "PAYPAL",
+      externalId: body.id,
+      type: body.event_type,
+      orderId: internalOrderId,
+    });
+    if (!claimedEventId) return Response.json({ received: true, duplicate: true });
+    const reconciled = await reconcilePendingOrder(internalOrderId, { force: true });
+    if (reconciled.state !== "paid" && reconciled.state !== "unchanged") {
+      await finishPaymentEvent(claimedEventId, "FAILED", "PayPal payment could not be reconciled");
+      return Response.json({ error: "Payment not reconciled" }, { status: 500 });
+    }
+    await finishPaymentEvent(claimedEventId, "PROCESSED");
     return Response.json({ received: true });
   } catch (error) {
+    if (claimedEventId) {
+      const message = error instanceof Error ? error.message : "PayPal event processing failed";
+      await finishPaymentEvent(claimedEventId, "FAILED", message).catch(() => undefined);
+    }
     console.error("PayPal webhook failed", error);
-    return Response.json({ error: "Invalid webhook" }, { status: 400 });
+    return Response.json(
+      { error: claimedEventId ? "Event processing failed" : "Invalid webhook" },
+      { status: claimedEventId ? 500 : 400 },
+    );
   }
 }

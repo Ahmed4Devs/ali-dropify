@@ -5,6 +5,7 @@ import { mkdir, unlink, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
+import { ownAvatarFilename } from "@/lib/avatar";
 import { requireUser } from "@/lib/dal";
 import { prisma } from "@/lib/prisma";
 
@@ -122,14 +123,24 @@ export async function uploadAvatarAction(locale: "en" | "ar", formData: FormData
     const filename = `avatar-${session.user.id}-${randomUUID()}.${extension}`;
     await writeFile(path.join(uploads, filename), bytes, { flag: "wx" });
     const image = `/uploads/${filename}`;
-    await prisma.user.update({ where: { id: session.user.id }, data: { image } });
-    const previous = session.user.image;
-    if (previous?.startsWith(`/uploads/avatar-${session.user.id}-`)) {
-      const previousPath = path.resolve(process.cwd(), "public", previous.slice(1));
-      const uploadRoot = path.resolve(uploads);
-      if (previousPath.startsWith(`${uploadRoot}${path.sep}`)) {
-        await unlink(previousPath).catch(() => undefined);
-      }
+    // Read the image being replaced from the database rather than from the session:
+    // better-auth serves session.user.image from a 300s cookie cache that this write
+    // does not refresh, so within that window it still holds the value from sign-in
+    // and every replaced avatar would leak. Same transaction, so concurrent uploads
+    // cannot both claim the same predecessor.
+    const previousImage = await prisma.$transaction(async (tx) => {
+      const current = await tx.user.findUnique({
+        where: { id: session.user.id },
+        select: { image: true },
+      });
+      await tx.user.update({ where: { id: session.user.id }, data: { image } });
+      return current?.image ?? null;
+    });
+    // Still validated: User.image is reachable through better-auth's /update-user, so
+    // only a filename this action itself could have written for this user is unlinked.
+    const previousName = ownAvatarFilename(previousImage, session.user.id);
+    if (previousName) {
+      await unlink(path.join(uploads, previousName)).catch(() => undefined);
     }
     revalidatePath(`/${locale}/account`);
     return { ok: true as const, data: { image } };

@@ -10,7 +10,8 @@ import { z } from "zod";
 import { Prisma } from "@/generated/prisma/client";
 import { requireAdmin } from "@/lib/dal";
 import { prisma } from "@/lib/prisma";
-import { markOrderPaid } from "@/lib/payments/shared";
+import { reconcilePendingOrder } from "@/lib/payments/lifecycle";
+import { refundOrder } from "@/lib/payments/refunds";
 import type { ActionResult } from "@/types";
 
 const idSchema = z.string().trim().min(1).max(191);
@@ -44,7 +45,19 @@ const imageUrlSchema = z
   .min(1)
   .max(2_048)
   .refine((value) => {
-    if (value.startsWith("/uploads/")) return true;
+    if (value.startsWith("/uploads/")) {
+      // Must name a single file directly inside public/uploads. Storing a traversing
+      // path here is harmless today, but it is the shape that turned the avatar
+      // cleanup into an arbitrary-delete (see lib/avatar.ts) — so reject it at write.
+      const filename = value.slice("/uploads/".length);
+      return (
+        filename.length > 0 &&
+        !filename.includes("/") &&
+        !filename.includes("\\") &&
+        filename !== "." &&
+        filename !== ".."
+      );
+    }
     try {
       const url = new URL(value);
       return url.protocol === "https:" &&
@@ -80,6 +93,17 @@ const variantOptionValueSchema = z.union([
   }).strict(),
 ]);
 
+const skuSchema = z
+  .union([
+    z.string().trim().min(1).max(80).regex(/^[A-Za-z0-9][A-Za-z0-9._-]*$/, {
+      message: "SKU may contain letters, numbers, dots, underscores, and hyphens",
+    }),
+    z.literal("").transform(() => null),
+    z.null(),
+  ])
+  .optional()
+  .default(null);
+
 const variantSchema = z
   .object({
     titleEn: z.string().trim().min(1).max(150),
@@ -93,7 +117,10 @@ const variantSchema = z
         message: "Each variant needs at least one option",
       }),
     priceUsd: z.number().int().min(0).nullable().optional().default(null),
+    sku: skuSchema,
     inStock: z.boolean().optional().default(true),
+    trackInventory: z.boolean().optional().default(false),
+    stockQuantity: z.number().int().min(0).max(1_000_000_000).optional().default(0),
   })
   .strict();
 
@@ -118,6 +145,7 @@ const productSchema = z
       .optional()
       .default(null),
     costUsd: z.number().int().min(0).max(1_000_000_000).optional().default(0),
+    sku: skuSchema,
     images: z
       .array(imageUrlSchema)
       .min(1, "Add at least one product image")
@@ -132,6 +160,8 @@ const productSchema = z
       .default([])
       .transform((tags) => [...new Set(tags)]),
     inStock: z.boolean().optional().default(true),
+    trackInventory: z.boolean().optional().default(false),
+    stockQuantity: z.number().int().min(0).max(1_000_000_000).optional().default(0),
     isFeatured: z.boolean().optional().default(false),
     aliexpressUrl: webUrlSchema.nullable().optional().default(null),
     categoryId: idSchema.nullable().optional().default(null),
@@ -140,6 +170,15 @@ const productSchema = z
   .strict()
   .superRefine((product, context) => {
     const combinations = new Set<string>();
+    const skus = new Set<string>();
+
+    if (product.variants.length > 0 && product.trackInventory) {
+      context.addIssue({
+        code: "custom",
+        message: "Track inventory on each variant when variants are present",
+        path: ["trackInventory"],
+      });
+    }
 
     product.variants.forEach((variant, index) => {
       const combination = JSON.stringify(
@@ -156,6 +195,17 @@ const productSchema = z
         });
       }
       combinations.add(combination);
+      if (variant.sku) {
+        const normalizedSku = variant.sku.toUpperCase();
+        if (skus.has(normalizedSku)) {
+          context.addIssue({
+            code: "custom",
+            message: "Variant SKUs must be unique",
+            path: ["variants", index, "sku"],
+          });
+        }
+        skus.add(normalizedSku);
+      }
     });
   });
 
@@ -179,6 +229,7 @@ const updateOrderStatusSchema = z
   .object({
     orderId: idSchema,
     status: orderStatusSchema,
+    reason: z.string().trim().min(3).max(500).optional(),
   })
   .strict();
 
@@ -328,9 +379,9 @@ const uploadSchema = z.object({
 const formDataSchema = z.instanceof(FormData);
 
 const allowedOrderTransitions = {
-  PENDING: ["PAID", "CANCELLED"],
-  PAID: ["FULFILLED", "CANCELLED", "REFUNDED"],
-  FULFILLED: ["DELIVERED", "CANCELLED", "REFUNDED"],
+  PENDING: ["CANCELLED"],
+  PAID: ["FULFILLED", "REFUNDED"],
+  FULFILLED: ["DELIVERED", "REFUNDED"],
   DELIVERED: ["REFUNDED"],
   CANCELLED: [],
   REFUNDED: [],
@@ -352,6 +403,12 @@ function mutationError(
 ): { ok: false; error: string } {
   if (error instanceof Prisma.PrismaClientKnownRequestError) {
     if (error.code === "P2002") {
+      const target = Array.isArray(error.meta?.target)
+        ? error.meta.target.map(String)
+        : [String(error.meta?.target ?? "")];
+      if (target.some((field) => field.toLowerCase().includes("sku"))) {
+        return { ok: false, error: "adminSkuInUse" };
+      }
       return { ok: false, error: "adminSlugInUse" };
     }
     if (error.code === "P2003") {
@@ -586,10 +643,17 @@ export async function createProductAction(
 
   const { variants, ...data } = parsed.data;
   try {
+    const normalizedVariants = variants.map((variant) => ({
+      ...variant,
+      sku: variant.sku?.toUpperCase() ?? null,
+      inStock: variant.trackInventory ? variant.stockQuantity > 0 : variant.inStock,
+    }));
     const product = await prisma.product.create({
       data: {
         ...data,
-        variants: { create: variants },
+        sku: data.sku?.toUpperCase() ?? null,
+        inStock: data.trackInventory ? data.stockQuantity > 0 : data.inStock,
+        variants: { create: normalizedVariants },
       },
       select: { id: true, slug: true },
     });
@@ -610,9 +674,17 @@ export async function updateProductAction(
   const { id, variants, ...data } = parsed.data;
   try {
     const result = await prisma.$transaction(async (transaction) => {
+      const existingProduct = await transaction.product.findUnique({
+        where: { id },
+        select: { reservedQuantity: true },
+      });
+      if (!existingProduct) return { ok: false as const, error: "adminRecordNotFound" };
+      if (data.stockQuantity < existingProduct.reservedQuantity) {
+        return { ok: false as const, error: "adminStockBelowReserved" };
+      }
       const existingVariants = await transaction.variant.findMany({
         where: { productId: id },
-        select: { id: true },
+        select: { id: true, reservedQuantity: true },
       });
       const existingVariantIds = new Set(existingVariants.map((variant) => variant.id));
       const submittedVariantIds = variants.flatMap((variant) =>
@@ -631,9 +703,29 @@ export async function updateProductAction(
         .map((variant) => variant.id)
         .filter((variantId) => !submittedVariantIdSet.has(variantId));
 
+      if (existingVariants.some((variant) =>
+        removedVariantIds.includes(variant.id) && variant.reservedQuantity > 0
+      )) {
+        return { ok: false as const, error: "adminVariantReserved" };
+      }
+
+      const reservedByVariant = new Map(
+        existingVariants.map((variant) => [variant.id, variant.reservedQuantity]),
+      );
+      if (variants.some((variant) =>
+        variant.id &&
+        variant.stockQuantity < (reservedByVariant.get(variant.id) ?? 0)
+      )) {
+        return { ok: false as const, error: "adminStockBelowReserved" };
+      }
+
       const product = await transaction.product.update({
         where: { id },
-        data,
+        data: {
+          ...data,
+          sku: data.sku?.toUpperCase() ?? null,
+          inStock: data.trackInventory ? data.stockQuantity > 0 : data.inStock,
+        },
         select: { id: true, slug: true },
       });
 
@@ -652,16 +744,32 @@ export async function updateProductAction(
         });
       }
 
+      if (submittedVariantIds.length) {
+        // Clear current values first so valid SKU swaps do not trip the unique
+        // index halfway through the transaction.
+        await transaction.variant.updateMany({
+          where: { productId: id, id: { in: submittedVariantIds } },
+          data: { sku: null },
+        });
+      }
+
       for (const variant of variants) {
         const { id: variantId, ...variantData } = variant;
+        const normalizedVariant = {
+          ...variantData,
+          sku: variantData.sku?.toUpperCase() ?? null,
+          inStock: variantData.trackInventory
+            ? variantData.stockQuantity > 0
+            : variantData.inStock,
+        };
         if (variantId) {
           await transaction.variant.update({
             where: { id: variantId },
-            data: variantData,
+            data: normalizedVariant,
           });
         } else {
           await transaction.variant.create({
-            data: { ...variantData, productId: id },
+            data: { ...normalizedVariant, productId: id },
           });
         }
       }
@@ -742,7 +850,7 @@ export async function uploadAdminImagesAction(
 export async function updateOrderStatusAction(
   input: z.input<typeof updateOrderStatusSchema>,
 ): Promise<ActionResult<{ id: string; status: z.output<typeof orderStatusSchema> }>> {
-  await requireAdmin();
+  const admin = await requireAdmin();
   const parsed = updateOrderStatusSchema.safeParse(input);
   if (!parsed.success) return validationError(parsed.error, "Invalid order status");
 
@@ -756,6 +864,11 @@ export async function updateOrderStatusAction(
         checkoutKey: true,
         paymentUrl: true,
         paymentCreatingAt: true,
+        providerCheckoutId: true,
+        paymentExpiresAt: true,
+        paymentRef: true,
+        currency: true,
+        total: true,
       },
     });
     if (!order) return { ok: false, error: "Order not found" };
@@ -771,21 +884,39 @@ export async function updateOrderStatusAction(
         };
       }
 
-      if (order.status === "PENDING" && parsed.data.status === "PAID") {
-        if (!order.paymentMethod) return { ok: false, error: "Choose a payment method before marking this order paid" };
-        const paid = await markOrderPaid(order.id, order.paymentMethod, `manual-${randomUUID()}`);
-        if (!paid) return { ok: false, error: "The order changed; refresh and try again" };
-      } else {
-        if (
-          order.status === "PENDING" &&
-          parsed.data.status === "CANCELLED" &&
-          (order.paymentUrl || order.paymentCreatingAt)
-        ) {
-          return {
-            ok: false,
-            error: "An active hosted payment cannot be cancelled from the dashboard",
-          };
+      if (parsed.data.status === "REFUNDED") {
+        const refunded = await refundOrder({
+          orderId: order.id,
+          reason: parsed.data.reason ?? "Requested by administrator",
+          requestedById: admin.user.id,
+        });
+        if (!refunded.ok) return refunded;
+        if (refunded.state === "pending") {
+          revalidateAdminAndAccounts();
+          return { ok: true, data: { id: order.id, status: order.status } };
         }
+      } else if (order.status === "PENDING" && parsed.data.status === "CANCELLED") {
+        const cancelled = await reconcilePendingOrder(order.id, { cancel: true, force: true });
+        if (cancelled.state !== "cancelled") {
+          const error = cancelled.state === "paid"
+            ? "Payment was already completed; refresh the order"
+            : cancelled.state === "active"
+              ? "This provider checkout cannot be cancelled while it is active"
+              : cancelled.state === "unknown"
+                ? cancelled.message
+                : "The order changed; refresh and try again";
+          return { ok: false, error };
+        }
+        await prisma.adminAuditLog.create({
+          data: {
+            adminUserId: admin.user.id,
+            action: "ORDER_CANCELLED",
+            targetType: "Order",
+            targetId: order.id,
+            metadata: { provider: order.paymentMethod },
+          },
+        });
+      } else {
         const updated = await prisma.$transaction(async (transaction) => {
           const transition = await transaction.order.updateMany({
             where: { id: order.id, status: order.status },
@@ -793,12 +924,15 @@ export async function updateOrderStatusAction(
           });
           if (transition.count !== 1) return false;
 
-          if (order.status === "PENDING" && parsed.data.status === "CANCELLED") {
-            await transaction.cart.updateMany({
-              where: { activeCheckoutKey: order.checkoutKey },
-              data: { activeCheckoutKey: null },
-            });
-          }
+          await transaction.adminAuditLog.create({
+            data: {
+              adminUserId: admin.user.id,
+              action: "ORDER_STATUS_CHANGED",
+              targetType: "Order",
+              targetId: order.id,
+              metadata: { from: order.status, to: parsed.data.status },
+            },
+          });
           return true;
         });
         if (!updated) {

@@ -54,6 +54,8 @@ export function AccountDashboard({ locale, user, addresses, orders }: AccountDas
     STRIPE: status("payment.stripe"),
     MOYASAR: status("payment.moyasar"),
     PAYPAL: status("payment.paypal"),
+    PADDLE: status("payment.paddle"),
+    LEMONSQUEEZY: status("payment.lemonSqueezy"),
   };
 
   function resetAddress() {

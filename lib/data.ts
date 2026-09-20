@@ -94,8 +94,10 @@ export async function getProducts(
     });
     return products.map((product) => ({
       ...product,
+      inStock: product.inStock && (!product.trackInventory || product.stockQuantity > product.reservedQuantity),
       variants: product.variants.map((variant) => ({
         ...variant,
+        inStock: variant.inStock && (!variant.trackInventory || variant.stockQuantity > variant.reservedQuantity),
         options: variant.options as VariantOptions,
       })),
       reviews: product.reviews,
@@ -103,6 +105,89 @@ export async function getProducts(
   } catch (error) {
     rethrowInProduction(error);
     return filterDemoProducts(category, query, sort);
+  }
+}
+
+export async function getProductPage(
+  category: string | undefined,
+  query: string | undefined,
+  sort: ProductSort = "newest",
+  requestedPage = 1,
+  pageSize = 12,
+) {
+  try {
+    const where: Prisma.ProductWhereInput = {};
+    if (category) where.category = { slug: category };
+    if (query) {
+      where.OR = [
+        { titleEn: { contains: query, mode: "insensitive" } },
+        { titleAr: { contains: query, mode: "insensitive" } },
+        { tags: { has: query.toLowerCase() } },
+      ];
+    }
+    const orderBy: Prisma.ProductOrderByWithRelationInput =
+      sort === "price-asc"
+        ? { priceUsd: "asc" }
+        : sort === "price-desc"
+          ? { priceUsd: "desc" }
+          : { createdAt: "desc" };
+    const total = await prisma.product.count({ where });
+    const totalPages = Math.max(1, Math.ceil(total / pageSize));
+    const page = Math.min(Math.max(1, requestedPage), totalPages);
+    const products = await prisma.product.findMany({
+      where,
+      orderBy,
+      skip: (page - 1) * pageSize,
+      take: pageSize,
+      include: {
+        category: true,
+        variants: true,
+        reviews: { where: { status: "APPROVED" }, orderBy: { createdAt: "desc" } },
+      },
+    });
+    return {
+      page,
+      total,
+      totalPages,
+      products: products.map((product) => ({
+        ...product,
+        inStock: product.inStock && (!product.trackInventory || product.stockQuantity > product.reservedQuantity),
+        variants: product.variants.map((variant) => ({
+          ...variant,
+          inStock: variant.inStock && (!variant.trackInventory || variant.stockQuantity > variant.reservedQuantity),
+          options: variant.options as VariantOptions,
+        })),
+        reviews: product.reviews,
+      })) as ProductData[],
+    };
+  } catch (error) {
+    rethrowInProduction(error);
+    const products = filterDemoProducts(category, query, sort);
+    const total = products.length;
+    const totalPages = Math.max(1, Math.ceil(total / pageSize));
+    const page = Math.min(Math.max(1, requestedPage), totalPages);
+    return {
+      page,
+      total,
+      totalPages,
+      products: products.slice((page - 1) * pageSize, page * pageSize),
+    };
+  }
+}
+
+export async function getProductSitemapEntries() {
+  try {
+    return await prisma.product.findMany({
+      select: { slug: true, updatedAt: true, images: true },
+      orderBy: { updatedAt: "desc" },
+    });
+  } catch (error) {
+    rethrowInProduction(error);
+    return demoProducts.map((product) => ({
+      slug: product.slug,
+      updatedAt: new Date(product.updatedAt),
+      images: product.images,
+    }));
   }
 }
 
@@ -149,8 +234,10 @@ export async function getProductBySlug(slug: string): Promise<ProductData | null
     if (product) {
       return {
         ...product,
+        inStock: product.inStock && (!product.trackInventory || product.stockQuantity > product.reservedQuantity),
         variants: product.variants.map((variant) => ({
           ...variant,
+          inStock: variant.inStock && (!variant.trackInventory || variant.stockQuantity > variant.reservedQuantity),
           options: variant.options as VariantOptions,
         })),
         reviews: product.reviews,

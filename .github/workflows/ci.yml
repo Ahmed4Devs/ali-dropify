@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/dropify
+      DIRECT_URL: postgresql://postgres:postgres@localhost:5432/dropify
+      BETTER_AUTH_SECRET: ci-only-auth-secret-at-least-thirty-two-characters
+      CRON_SECRET: ci-only-cron-secret-at-least-thirty-two-characters
+      BETTER_AUTH_URL: https://ci.invalid
+      NEXT_PUBLIC_APP_URL: https://ci.invalid
+      RESEND_API_KEY: re_test_ci_only
+      RESEND_FROM: Dropify CI <ci@ci.invalid>
+      STRIPE_SECRET_KEY: sk_test_ci_only
+      STRIPE_WEBHOOK_SECRET: whsec_ci_only
+      MOYASAR_SECRET_KEY: sk_test_ci_only
+      PAYPAL_CLIENT_ID: paypal-ci-client
+      PAYPAL_CLIENT_SECRET: paypal-ci-secret
+      PAYPAL_WEBHOOK_ID: paypal-ci-webhook
+      PAYPAL_MODE: sandbox
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run db:generate
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build

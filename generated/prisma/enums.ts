@@ -32,10 +32,43 @@ export type OrderStatus = (typeof OrderStatus)[keyof typeof OrderStatus]
 export const PaymentMethod = {
   STRIPE: 'STRIPE',
   MOYASAR: 'MOYASAR',
-  PAYPAL: 'PAYPAL'
+  PAYPAL: 'PAYPAL',
+  PADDLE: 'PADDLE',
+  LEMONSQUEEZY: 'LEMONSQUEEZY'
 } as const
 
 export type PaymentMethod = (typeof PaymentMethod)[keyof typeof PaymentMethod]
+
+
+export const PaymentEventStatus = {
+  RECEIVED: 'RECEIVED',
+  PROCESSING: 'PROCESSING',
+  PROCESSED: 'PROCESSED',
+  IGNORED: 'IGNORED',
+  FAILED: 'FAILED'
+} as const
+
+export type PaymentEventStatus = (typeof PaymentEventStatus)[keyof typeof PaymentEventStatus]
+
+
+export const RefundStatus = {
+  PENDING: 'PENDING',
+  SUCCEEDED: 'SUCCEEDED',
+  FAILED: 'FAILED',
+  NEEDS_REVIEW: 'NEEDS_REVIEW'
+} as const
+
+export type RefundStatus = (typeof RefundStatus)[keyof typeof RefundStatus]
+
+
+export const InventoryState = {
+  NOT_TRACKED: 'NOT_TRACKED',
+  RESERVED: 'RESERVED',
+  COMMITTED: 'COMMITTED',
+  RELEASED: 'RELEASED'
+} as const
+
+export type InventoryState = (typeof InventoryState)[keyof typeof InventoryState]
 
 
 export const ReviewSource = {

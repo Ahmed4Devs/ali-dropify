@@ -19,7 +19,14 @@ if (!connectionString) {
   throw new Error("DATABASE_URL is required to seed the database.");
 }
 
-const adapter = new PrismaPg({ connectionString });
+// Seeding is a one-off script against a possibly-suspended serverless database:
+// allow for a cold start instead of the `pg` default of waiting forever.
+const adapter = new PrismaPg({
+  connectionString,
+  connectionTimeoutMillis: 15_000,
+  idleTimeoutMillis: 30_000,
+  keepAlive: true,
+});
 const prisma = new PrismaClient({ adapter });
 
 const adminId = "seed-user-admin";
@@ -303,7 +310,10 @@ const variantSeeds = [
   titleAr: String(titleAr),
   options: options as Prisma.InputJsonValue,
   priceUsd: priceUsd === null ? null : Number(priceUsd),
+  sku: `SEED-VARIANT-${String(index + 1).padStart(2, "0")}`,
   inStock: Boolean(inStock),
+  trackInventory: true,
+  stockQuantity: inStock ? 25 : 0,
 })) satisfies Prisma.VariantUncheckedCreateInput[];
 
 const reviewSeeds = [
@@ -696,10 +706,17 @@ async function seedCatalog() {
   }
 
   for (const product of productSeeds) {
+    const hasVariants = variantSeeds.some((variant) => variant.productId === product.id);
+    const inventoryProduct = {
+      ...product,
+      sku: `SEED-${product.slug.toUpperCase()}`,
+      trackInventory: !hasVariants,
+      stockQuantity: hasVariants ? 0 : product.inStock ? 50 : 0,
+    };
     await prisma.product.upsert({
       where: { id: product.id },
-      update: product,
-      create: product,
+      update: inventoryProduct,
+      create: inventoryProduct,
     });
   }
 

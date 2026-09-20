@@ -65,9 +65,9 @@ function isOrderStatus(value: string): value is (typeof orderStatuses)[number] {
 function canTransition(from: string, to: string) {
   if (from === to) return true;
   const transitions: Record<string, readonly string[]> = {
-    PENDING: ["PAID", "CANCELLED"],
-    PAID: ["FULFILLED", "CANCELLED", "REFUNDED"],
-    FULFILLED: ["DELIVERED", "CANCELLED", "REFUNDED"],
+    PENDING: ["CANCELLED"],
+    PAID: ["FULFILLED", "REFUNDED"],
+    FULFILLED: ["DELIVERED", "REFUNDED"],
     DELIVERED: ["REFUNDED"],
     CANCELLED: [],
     REFUNDED: [],
@@ -119,6 +119,7 @@ function OrderManager({
   const [query, setQuery] = useState("");
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
+  const [refundReason, setRefundReason] = useState("");
   const [isPending, startTransition] = useTransition();
 
   function orderStatusLabel(status: string) {
@@ -135,6 +136,8 @@ function OrderManager({
     if (method === "STRIPE") return statusT("payment.stripe");
     if (method === "MOYASAR") return statusT("payment.moyasar");
     if (method === "PAYPAL") return statusT("payment.paypal");
+    if (method === "PADDLE") return statusT("payment.paddle");
+    if (method === "LEMONSQUEEZY") return statusT("payment.lemonSqueezy");
     return common("notAvailable");
   }
 
@@ -180,12 +183,16 @@ function OrderManager({
   function updateStatus(status: string) {
     if (!selected || !isOrderStatus(status)) return;
     startTransition(async () => {
-      const result = await updateOrderStatusAction({ orderId: selected.id, status });
+      const result = await updateOrderStatusAction({
+        orderId: selected.id,
+        status,
+        reason: status === "REFUNDED" ? refundReason.trim() || undefined : undefined,
+      });
       if (!result.ok) {
         toast.error(t("statusUpdateFailed"));
         return;
       }
-      setSelected({ ...selected, status });
+      setSelected({ ...selected, status: result.data.status });
       toast.success(t("statusUpdated"));
     });
   }
@@ -323,6 +330,17 @@ function OrderManager({
                     <SelectTrigger className="w-full" aria-label={t("updateStatus")}><SelectValue /></SelectTrigger>
                     <SelectContent>{orderStatuses.map((status) => <SelectItem key={status} value={status} disabled={!canTransition(selected.status, status)}>{orderStatusLabel(status)}</SelectItem>)}</SelectContent>
                   </Select>
+                  {["PAID", "FULFILLED", "DELIVERED"].includes(selected.status) ? (
+                    <Label className="grid gap-1.5 text-xs text-muted-foreground">
+                      {t("refundReason")}
+                      <Input
+                        value={refundReason}
+                        onChange={(event) => setRefundReason(event.target.value)}
+                        placeholder={t("refundReasonPlaceholder")}
+                        maxLength={500}
+                      />
+                    </Label>
+                  ) : null}
                 </section>
               </div>
               <SheetFooter className="border-t">
