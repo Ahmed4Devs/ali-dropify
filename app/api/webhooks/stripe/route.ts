@@ -4,6 +4,7 @@ import { claimPaymentEvent, finishPaymentEvent } from "@/lib/payments/events";
 import { reconcilePendingOrder } from "@/lib/payments/lifecycle";
 import { completeRefund } from "@/lib/payments/refunds";
 import { markOrderPaid, usesDummyCredential } from "@/lib/payments/shared";
+import { matchesStripeRefund } from "@/lib/payments/stripe-refund-match";
 
 export async function POST(request: Request) {
   const key = process.env.STRIPE_SECRET_KEY;
@@ -42,6 +43,9 @@ export async function POST(request: Request) {
       if (
         completedOrderId &&
         order &&
+        order.paymentMethod === "STRIPE" &&
+        order.providerCheckoutId === session.id &&
+        session.client_reference_id === order.id &&
         session.payment_status === "paid" &&
         amountMatches &&
         order.total === session.amount_total &&
@@ -66,7 +70,16 @@ export async function POST(request: Request) {
         const refund = event.data.object;
         const refundOrderId = refund.metadata?.orderId;
         if (refund.status === "succeeded" && refundOrderId) {
-          await completeRefund(refundOrderId, refund.id);
+          const order = await prisma.order.findUnique({
+            where: { id: refundOrderId },
+            include: { refund: true },
+          });
+          if (!order || !matchesStripeRefund(refund, order, order.refund)) {
+            throw new Error("Stripe refund details did not match the requested refund");
+          }
+          if (!await completeRefund(order.id, refund.id)) {
+            throw new Error("Stripe refund could not be applied to the order");
+          }
         }
       } else {
         await finishPaymentEvent(eventRecordId, "IGNORED");

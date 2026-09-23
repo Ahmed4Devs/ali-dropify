@@ -21,8 +21,8 @@ export async function completeRefund(orderId: string, providerRef: string) {
       select: { status: true },
     });
     if (!order || !["PAID", "FULFILLED", "DELIVERED"].includes(order.status)) return false;
-    await transaction.refund.update({
-      where: { orderId },
+    const claimed = await transaction.refund.updateMany({
+      where: { orderId, status: { not: "SUCCEEDED" } },
       data: {
         status: "SUCCEEDED",
         providerRef,
@@ -30,10 +30,12 @@ export async function completeRefund(orderId: string, providerRef: string) {
         error: null,
       },
     });
-    await transaction.order.update({
-      where: { id: orderId },
+    if (claimed.count !== 1) return true;
+    const updated = await transaction.order.updateMany({
+      where: { id: orderId, status: { in: ["PAID", "FULFILLED", "DELIVERED"] } },
       data: { status: "REFUNDED" },
     });
+    if (updated.count !== 1) throw new Error("Refunded order status changed during completion");
     await transaction.adminAuditLog.create({
       data: {
         adminUserId: refund.requestedById,
@@ -89,23 +91,57 @@ export async function refundOrder(input: {
     return { ok: false, error: "The previous refund outcome is uncertain and needs provider reconciliation" };
   }
 
-  await prisma.refund.upsert({
-    where: { orderId: order.id },
-    create: {
-      orderId: order.id,
-      provider: order.paymentMethod,
-      amount: order.total,
-      currency: order.currency,
-      reason: input.reason,
-      requestedById: input.requestedById,
-    },
-    update: {
-      status: "PENDING",
-      reason: input.reason,
-      requestedById: input.requestedById,
-      error: null,
-    },
-  });
+  if (order.refund) {
+    const restarted = await prisma.refund.updateMany({
+      where: {
+        orderId: order.id,
+        status: order.refund.status,
+        updatedAt: order.refund.updatedAt,
+      },
+      data: {
+        status: "PENDING",
+        reason: input.reason,
+        requestedById: input.requestedById,
+        error: null,
+      },
+    });
+    if (restarted.count !== 1) {
+      const latest = await prisma.refund.findUnique({
+        where: { orderId: order.id },
+        select: { status: true },
+      });
+      if (latest?.status === "SUCCEEDED") return { ok: true, state: "succeeded" };
+      if (latest?.status === "NEEDS_REVIEW") {
+        return { ok: false, error: "The previous refund outcome needs provider reconciliation" };
+      }
+      return { ok: true, state: "pending" };
+    }
+  } else {
+    try {
+      await prisma.refund.create({
+        data: {
+          orderId: order.id,
+          provider: order.paymentMethod,
+          amount: order.total,
+          currency: order.currency,
+          reason: input.reason,
+          requestedById: input.requestedById,
+        },
+      });
+    } catch (error) {
+      const duplicate = error instanceof Error && "code" in error && error.code === "P2002";
+      if (!duplicate) throw error;
+      const latest = await prisma.refund.findUnique({
+        where: { orderId: order.id },
+        select: { status: true },
+      });
+      if (latest?.status === "SUCCEEDED") return { ok: true, state: "succeeded" };
+      if (latest?.status === "NEEDS_REVIEW") {
+        return { ok: false, error: "The previous refund outcome needs provider reconciliation" };
+      }
+      return { ok: true, state: "pending" };
+    }
+  }
 
   const providerOrder = {
     id: order.id,
@@ -118,53 +154,40 @@ export async function refundOrder(input: {
   } satisfies ProviderOrder;
   const provider = await refundProviderPayment(providerOrder);
   if (provider.state === "succeeded") {
-    await prisma.$transaction([
-      prisma.refund.update({
-        where: { orderId: order.id },
-        data: {
-          status: "SUCCEEDED",
-          providerRef: provider.providerRef,
-          completedAt: new Date(),
-          error: null,
-        },
-      }),
-      prisma.order.update({
-        where: { id: order.id },
-        data: { status: "REFUNDED" },
-      }),
-      prisma.adminAuditLog.create({
-        data: {
-          adminUserId: input.requestedById,
-          action: "ORDER_REFUNDED",
-          targetType: "Order",
-          targetId: order.id,
-          metadata: {
-            provider: order.paymentMethod,
-            amount: order.total,
-            currency: order.currency,
-            reason: input.reason,
-            providerRef: provider.providerRef,
-          },
-        },
-      }),
-    ]);
+    if (!await completeRefund(order.id, provider.providerRef)) {
+      return { ok: false, error: "The provider confirmed the refund, but the order could not be updated" };
+    }
     return { ok: true, state: "succeeded" };
   }
   if (provider.state === "pending") {
-    await prisma.refund.update({
-      where: { orderId: order.id },
+    const pending = await prisma.refund.updateMany({
+      where: { orderId: order.id, status: "PENDING" },
       data: { status: "PENDING", providerRef: provider.providerRef },
     });
-    return { ok: true, state: "pending" };
+    if (pending.count === 1) return { ok: true, state: "pending" };
+    const latest = await prisma.refund.findUnique({
+      where: { orderId: order.id },
+      select: { status: true },
+    });
+    return latest?.status === "SUCCEEDED"
+      ? { ok: true, state: "succeeded" }
+      : { ok: true, state: "pending" };
   }
 
-  await prisma.refund.update({
-    where: { orderId: order.id },
+  const failed = await prisma.refund.updateMany({
+    where: { orderId: order.id, status: "PENDING" },
     data: {
       status: provider.state === "needs_review" ? "NEEDS_REVIEW" : "FAILED",
       error: provider.message.slice(0, 2_000),
     },
   });
+  if (failed.count === 0) {
+    const latest = await prisma.refund.findUnique({
+      where: { orderId: order.id },
+      select: { status: true },
+    });
+    if (latest?.status === "SUCCEEDED") return { ok: true, state: "succeeded" };
+  }
   return { ok: false, error: provider.message };
 }
 

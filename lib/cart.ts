@@ -58,6 +58,9 @@ export async function getWritableCart() {
   const session = await getSession();
   const cookieStore = await cookies();
   if (session?.user.id) {
+    // A merge deferred while either cart was in checkout can be retried on the
+    // next cart write, after the payment has released its cart lock.
+    await mergeGuestCart(session.user.id);
     const existing = await prisma.cart.findFirst({ where: { userId: session.user.id } });
     if (existing) return existing;
     try {
@@ -94,15 +97,29 @@ export async function mergeGuestCart(userId: string) {
     if (!token) return;
     const guest = await prisma.cart.findUnique({
       where: { sessionToken: token },
-      include: { items: true },
+      select: { id: true },
     });
     if (!guest) return;
     const userCart =
       (await prisma.cart.findFirst({ where: { userId } })) ??
       (await prisma.cart.create({ data: { userId } }));
 
-    await prisma.$transaction(async (transaction) => {
-      for (const item of guest.items) {
+    const merged = await prisma.$transaction(async (transaction) => {
+      // Touch both rows to hold their locks until the merge commits. Checkout
+      // uses the same rows to claim activeCheckoutKey, so neither cart can
+      // change underneath this copy-and-delete operation.
+      const guestClaim = await transaction.cart.updateMany({
+        where: { id: guest.id, sessionToken: token, activeCheckoutKey: null },
+        data: { updatedAt: new Date() },
+      });
+      if (guestClaim.count !== 1) return false;
+      const userClaim = await transaction.cart.updateMany({
+        where: { id: userCart.id, userId, activeCheckoutKey: null },
+        data: { updatedAt: new Date() },
+      });
+      if (userClaim.count !== 1) return false;
+      const guestItems = await transaction.cartItem.findMany({ where: { cartId: guest.id } });
+      for (const item of guestItems) {
         const existing = await transaction.cartItem.findFirst({
           where: {
             cartId: userCart.id,
@@ -127,8 +144,9 @@ export async function mergeGuestCart(userId: string) {
         }
       }
       await transaction.cart.delete({ where: { id: guest.id } });
+      return true;
     });
-    cookieStore.delete("guest-cart");
+    if (merged) cookieStore.delete("guest-cart");
   } catch {
     // Cart merging is best-effort; authentication should still succeed.
   }
