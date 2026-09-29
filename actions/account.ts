@@ -8,6 +8,7 @@ import { z } from "zod";
 import { ownAvatarFilename } from "@/lib/avatar";
 import { requireUser } from "@/lib/dal";
 import { prisma } from "@/lib/prisma";
+import { isSupportedShippingCountry, SAUDI_SHIPPING_COUNTRY } from "@/lib/shipping-destination";
 
 const profileSchema = z.object({
   locale: z.enum(["en", "ar"]),
@@ -54,12 +55,15 @@ export async function updateProfileAction(input: z.input<typeof profileSchema>) 
 export async function saveAddressAction(input: z.input<typeof addressSchema>) {
   const parsed = addressSchema.safeParse(input);
   if (!parsed.success) return { ok: false as const, error: "accountInvalidAddress" as const };
+  if (!isSupportedShippingCountry(parsed.data.country)) {
+    return { ok: false as const, error: "accountShippingCountryUnavailable" as const };
+  }
   const session = await requireUser(parsed.data.locale);
   try {
     const addressData = {
       fullName: parsed.data.fullName,
       phone: parsed.data.phone,
-      country: parsed.data.country,
+      country: SAUDI_SHIPPING_COUNTRY,
       state: parsed.data.state,
       city: parsed.data.city,
       street: parsed.data.street,

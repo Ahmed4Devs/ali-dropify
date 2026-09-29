@@ -8,7 +8,7 @@ import { AdminPageHeader } from "@/components/admin/page-header";
 import { ProductForm } from "@/components/admin/product-form";
 import { Button } from "@/components/ui/button";
 import { requireAdmin } from "@/lib/dal";
-import { getCategories, getProducts } from "@/lib/data";
+import { getAdminProducts, getCategories } from "@/lib/data";
 import messages from "@/messages/en.json";
 
 export const metadata: Metadata = { title: messages.admin.productForm.editTitle };
@@ -20,7 +20,7 @@ export default async function EditProductPage({
 }) {
   await requireAdmin();
   const { id } = await params;
-  const [products, categories] = await Promise.all([getProducts(), getCategories()]);
+  const [products, categories] = await Promise.all([getAdminProducts(), getCategories()]);
   const t = createTranslator({ locale: "en", messages, namespace: "admin.productForm" });
   const common = createTranslator({ locale: "en", messages, namespace: "common" });
   const product = products.find((entry) => entry.id === id);

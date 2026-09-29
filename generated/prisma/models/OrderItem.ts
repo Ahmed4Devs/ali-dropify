@@ -50,6 +50,14 @@ export type OrderItemMinAggregateOutputType = {
   image: string | null
   unitPrice: number | null
   unitCostUsd: number | null
+  supplierUrl: string | null
+  supplierProductId: string | null
+  supplierSkuId: string | null
+  supplierOrderRef: string | null
+  carrier: string | null
+  trackingNumber: string | null
+  trackingUrl: string | null
+  shippedAt: Date | null
   quantity: number | null
   inventoryReserved: number | null
 }
@@ -64,6 +72,14 @@ export type OrderItemMaxAggregateOutputType = {
   image: string | null
   unitPrice: number | null
   unitCostUsd: number | null
+  supplierUrl: string | null
+  supplierProductId: string | null
+  supplierSkuId: string | null
+  supplierOrderRef: string | null
+  carrier: string | null
+  trackingNumber: string | null
+  trackingUrl: string | null
+  shippedAt: Date | null
   quantity: number | null
   inventoryReserved: number | null
 }
@@ -79,6 +95,14 @@ export type OrderItemCountAggregateOutputType = {
   variant: number
   unitPrice: number
   unitCostUsd: number
+  supplierUrl: number
+  supplierProductId: number
+  supplierSkuId: number
+  supplierOrderRef: number
+  carrier: number
+  trackingNumber: number
+  trackingUrl: number
+  shippedAt: number
   quantity: number
   inventoryReserved: number
   _all: number
@@ -109,6 +133,14 @@ export type OrderItemMinAggregateInputType = {
   image?: true
   unitPrice?: true
   unitCostUsd?: true
+  supplierUrl?: true
+  supplierProductId?: true
+  supplierSkuId?: true
+  supplierOrderRef?: true
+  carrier?: true
+  trackingNumber?: true
+  trackingUrl?: true
+  shippedAt?: true
   quantity?: true
   inventoryReserved?: true
 }
@@ -123,6 +155,14 @@ export type OrderItemMaxAggregateInputType = {
   image?: true
   unitPrice?: true
   unitCostUsd?: true
+  supplierUrl?: true
+  supplierProductId?: true
+  supplierSkuId?: true
+  supplierOrderRef?: true
+  carrier?: true
+  trackingNumber?: true
+  trackingUrl?: true
+  shippedAt?: true
   quantity?: true
   inventoryReserved?: true
 }
@@ -138,6 +178,14 @@ export type OrderItemCountAggregateInputType = {
   variant?: true
   unitPrice?: true
   unitCostUsd?: true
+  supplierUrl?: true
+  supplierProductId?: true
+  supplierSkuId?: true
+  supplierOrderRef?: true
+  carrier?: true
+  trackingNumber?: true
+  trackingUrl?: true
+  shippedAt?: true
   quantity?: true
   inventoryReserved?: true
   _all?: true
@@ -240,6 +288,14 @@ export type OrderItemGroupByOutputType = {
   variant: runtime.JsonValue | null
   unitPrice: number
   unitCostUsd: number
+  supplierUrl: string | null
+  supplierProductId: string | null
+  supplierSkuId: string | null
+  supplierOrderRef: string | null
+  carrier: string | null
+  trackingNumber: string | null
+  trackingUrl: string | null
+  shippedAt: Date | null
   quantity: number
   inventoryReserved: number
   _count: OrderItemCountAggregateOutputType | null
@@ -278,6 +334,14 @@ export type OrderItemWhereInput = {
   variant?: Prisma.JsonNullableFilter<"OrderItem">
   unitPrice?: Prisma.IntFilter<"OrderItem"> | number
   unitCostUsd?: Prisma.IntFilter<"OrderItem"> | number
+  supplierUrl?: Prisma.StringNullableFilter<"OrderItem"> | string | null
+  supplierProductId?: Prisma.StringNullableFilter<"OrderItem"> | string | null
+  supplierSkuId?: Prisma.StringNullableFilter<"OrderItem"> | string | null
+  supplierOrderRef?: Prisma.StringNullableFilter<"OrderItem"> | string | null
+  carrier?: Prisma.StringNullableFilter<"OrderItem"> | string | null
+  trackingNumber?: Prisma.StringNullableFilter<"OrderItem"> | string | null
+  trackingUrl?: Prisma.StringNullableFilter<"OrderItem"> | string | null
+  shippedAt?: Prisma.DateTimeNullableFilter<"OrderItem"> | Date | string | null
   quantity?: Prisma.IntFilter<"OrderItem"> | number
   inventoryReserved?: Prisma.IntFilter<"OrderItem"> | number
   order?: Prisma.XOR<Prisma.OrderScalarRelationFilter, Prisma.OrderWhereInput>
@@ -296,6 +360,14 @@ export type OrderItemOrderByWithRelationInput = {
   variant?: Prisma.SortOrderInput | Prisma.SortOrder
   unitPrice?: Prisma.SortOrder
   unitCostUsd?: Prisma.SortOrder
+  supplierUrl?: Prisma.SortOrderInput | Prisma.SortOrder
+  supplierProductId?: Prisma.SortOrderInput | Prisma.SortOrder
+  supplierSkuId?: Prisma.SortOrderInput | Prisma.SortOrder
+  supplierOrderRef?: Prisma.SortOrderInput | Prisma.SortOrder
+  carrier?: Prisma.SortOrderInput | Prisma.SortOrder
+  trackingNumber?: Prisma.SortOrderInput | Prisma.SortOrder
+  trackingUrl?: Prisma.SortOrderInput | Prisma.SortOrder
+  shippedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   quantity?: Prisma.SortOrder
   inventoryReserved?: Prisma.SortOrder
   order?: Prisma.OrderOrderByWithRelationInput
@@ -317,6 +389,14 @@ export type OrderItemWhereUniqueInput = Prisma.AtLeast<{
   variant?: Prisma.JsonNullableFilter<"OrderItem">
   unitPrice?: Prisma.IntFilter<"OrderItem"> | number
   unitCostUsd?: Prisma.IntFilter<"OrderItem"> | number
+  supplierUrl?: Prisma.StringNullableFilter<"OrderItem"> | string | null
+  supplierProductId?: Prisma.StringNullableFilter<"OrderItem"> | string | null
+  supplierSkuId?: Prisma.StringNullableFilter<"OrderItem"> | string | null
+  supplierOrderRef?: Prisma.StringNullableFilter<"OrderItem"> | string | null
+  carrier?: Prisma.StringNullableFilter<"OrderItem"> | string | null
+  trackingNumber?: Prisma.StringNullableFilter<"OrderItem"> | string | null
+  trackingUrl?: Prisma.StringNullableFilter<"OrderItem"> | string | null
+  shippedAt?: Prisma.DateTimeNullableFilter<"OrderItem"> | Date | string | null
   quantity?: Prisma.IntFilter<"OrderItem"> | number
   inventoryReserved?: Prisma.IntFilter<"OrderItem"> | number
   order?: Prisma.XOR<Prisma.OrderScalarRelationFilter, Prisma.OrderWhereInput>
@@ -335,6 +415,14 @@ export type OrderItemOrderByWithAggregationInput = {
   variant?: Prisma.SortOrderInput | Prisma.SortOrder
   unitPrice?: Prisma.SortOrder
   unitCostUsd?: Prisma.SortOrder
+  supplierUrl?: Prisma.SortOrderInput | Prisma.SortOrder
+  supplierProductId?: Prisma.SortOrderInput | Prisma.SortOrder
+  supplierSkuId?: Prisma.SortOrderInput | Prisma.SortOrder
+  supplierOrderRef?: Prisma.SortOrderInput | Prisma.SortOrder
+  carrier?: Prisma.SortOrderInput | Prisma.SortOrder
+  trackingNumber?: Prisma.SortOrderInput | Prisma.SortOrder
+  trackingUrl?: Prisma.SortOrderInput | Prisma.SortOrder
+  shippedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   quantity?: Prisma.SortOrder
   inventoryReserved?: Prisma.SortOrder
   _count?: Prisma.OrderItemCountOrderByAggregateInput
@@ -358,6 +446,14 @@ export type OrderItemScalarWhereWithAggregatesInput = {
   variant?: Prisma.JsonNullableWithAggregatesFilter<"OrderItem">
   unitPrice?: Prisma.IntWithAggregatesFilter<"OrderItem"> | number
   unitCostUsd?: Prisma.IntWithAggregatesFilter<"OrderItem"> | number
+  supplierUrl?: Prisma.StringNullableWithAggregatesFilter<"OrderItem"> | string | null
+  supplierProductId?: Prisma.StringNullableWithAggregatesFilter<"OrderItem"> | string | null
+  supplierSkuId?: Prisma.StringNullableWithAggregatesFilter<"OrderItem"> | string | null
+  supplierOrderRef?: Prisma.StringNullableWithAggregatesFilter<"OrderItem"> | string | null
+  carrier?: Prisma.StringNullableWithAggregatesFilter<"OrderItem"> | string | null
+  trackingNumber?: Prisma.StringNullableWithAggregatesFilter<"OrderItem"> | string | null
+  trackingUrl?: Prisma.StringNullableWithAggregatesFilter<"OrderItem"> | string | null
+  shippedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"OrderItem"> | Date | string | null
   quantity?: Prisma.IntWithAggregatesFilter<"OrderItem"> | number
   inventoryReserved?: Prisma.IntWithAggregatesFilter<"OrderItem"> | number
 }
@@ -370,6 +466,14 @@ export type OrderItemCreateInput = {
   variant?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   unitPrice: number
   unitCostUsd?: number
+  supplierUrl?: string | null
+  supplierProductId?: string | null
+  supplierSkuId?: string | null
+  supplierOrderRef?: string | null
+  carrier?: string | null
+  trackingNumber?: string | null
+  trackingUrl?: string | null
+  shippedAt?: Date | string | null
   quantity: number
   inventoryReserved?: number
   order: Prisma.OrderCreateNestedOneWithoutItemsInput
@@ -388,6 +492,14 @@ export type OrderItemUncheckedCreateInput = {
   variant?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   unitPrice: number
   unitCostUsd?: number
+  supplierUrl?: string | null
+  supplierProductId?: string | null
+  supplierSkuId?: string | null
+  supplierOrderRef?: string | null
+  carrier?: string | null
+  trackingNumber?: string | null
+  trackingUrl?: string | null
+  shippedAt?: Date | string | null
   quantity: number
   inventoryReserved?: number
 }
@@ -400,6 +512,14 @@ export type OrderItemUpdateInput = {
   variant?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   unitPrice?: Prisma.IntFieldUpdateOperationsInput | number
   unitCostUsd?: Prisma.IntFieldUpdateOperationsInput | number
+  supplierUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  supplierProductId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  supplierSkuId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  supplierOrderRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  carrier?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  trackingNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  trackingUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  shippedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
   inventoryReserved?: Prisma.IntFieldUpdateOperationsInput | number
   order?: Prisma.OrderUpdateOneRequiredWithoutItemsNestedInput
@@ -418,6 +538,14 @@ export type OrderItemUncheckedUpdateInput = {
   variant?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   unitPrice?: Prisma.IntFieldUpdateOperationsInput | number
   unitCostUsd?: Prisma.IntFieldUpdateOperationsInput | number
+  supplierUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  supplierProductId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  supplierSkuId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  supplierOrderRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  carrier?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  trackingNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  trackingUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  shippedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
   inventoryReserved?: Prisma.IntFieldUpdateOperationsInput | number
 }
@@ -433,6 +561,14 @@ export type OrderItemCreateManyInput = {
   variant?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   unitPrice: number
   unitCostUsd?: number
+  supplierUrl?: string | null
+  supplierProductId?: string | null
+  supplierSkuId?: string | null
+  supplierOrderRef?: string | null
+  carrier?: string | null
+  trackingNumber?: string | null
+  trackingUrl?: string | null
+  shippedAt?: Date | string | null
   quantity: number
   inventoryReserved?: number
 }
@@ -445,6 +581,14 @@ export type OrderItemUpdateManyMutationInput = {
   variant?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   unitPrice?: Prisma.IntFieldUpdateOperationsInput | number
   unitCostUsd?: Prisma.IntFieldUpdateOperationsInput | number
+  supplierUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  supplierProductId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  supplierSkuId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  supplierOrderRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  carrier?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  trackingNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  trackingUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  shippedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
   inventoryReserved?: Prisma.IntFieldUpdateOperationsInput | number
 }
@@ -460,6 +604,14 @@ export type OrderItemUncheckedUpdateManyInput = {
   variant?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   unitPrice?: Prisma.IntFieldUpdateOperationsInput | number
   unitCostUsd?: Prisma.IntFieldUpdateOperationsInput | number
+  supplierUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  supplierProductId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  supplierSkuId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  supplierOrderRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  carrier?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  trackingNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  trackingUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  shippedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
   inventoryReserved?: Prisma.IntFieldUpdateOperationsInput | number
 }
@@ -485,6 +637,14 @@ export type OrderItemCountOrderByAggregateInput = {
   variant?: Prisma.SortOrder
   unitPrice?: Prisma.SortOrder
   unitCostUsd?: Prisma.SortOrder
+  supplierUrl?: Prisma.SortOrder
+  supplierProductId?: Prisma.SortOrder
+  supplierSkuId?: Prisma.SortOrder
+  supplierOrderRef?: Prisma.SortOrder
+  carrier?: Prisma.SortOrder
+  trackingNumber?: Prisma.SortOrder
+  trackingUrl?: Prisma.SortOrder
+  shippedAt?: Prisma.SortOrder
   quantity?: Prisma.SortOrder
   inventoryReserved?: Prisma.SortOrder
 }
@@ -506,6 +666,14 @@ export type OrderItemMaxOrderByAggregateInput = {
   image?: Prisma.SortOrder
   unitPrice?: Prisma.SortOrder
   unitCostUsd?: Prisma.SortOrder
+  supplierUrl?: Prisma.SortOrder
+  supplierProductId?: Prisma.SortOrder
+  supplierSkuId?: Prisma.SortOrder
+  supplierOrderRef?: Prisma.SortOrder
+  carrier?: Prisma.SortOrder
+  trackingNumber?: Prisma.SortOrder
+  trackingUrl?: Prisma.SortOrder
+  shippedAt?: Prisma.SortOrder
   quantity?: Prisma.SortOrder
   inventoryReserved?: Prisma.SortOrder
 }
@@ -520,6 +688,14 @@ export type OrderItemMinOrderByAggregateInput = {
   image?: Prisma.SortOrder
   unitPrice?: Prisma.SortOrder
   unitCostUsd?: Prisma.SortOrder
+  supplierUrl?: Prisma.SortOrder
+  supplierProductId?: Prisma.SortOrder
+  supplierSkuId?: Prisma.SortOrder
+  supplierOrderRef?: Prisma.SortOrder
+  carrier?: Prisma.SortOrder
+  trackingNumber?: Prisma.SortOrder
+  trackingUrl?: Prisma.SortOrder
+  shippedAt?: Prisma.SortOrder
   quantity?: Prisma.SortOrder
   inventoryReserved?: Prisma.SortOrder
 }
@@ -665,6 +841,14 @@ export type OrderItemCreateWithoutProductInput = {
   variant?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   unitPrice: number
   unitCostUsd?: number
+  supplierUrl?: string | null
+  supplierProductId?: string | null
+  supplierSkuId?: string | null
+  supplierOrderRef?: string | null
+  carrier?: string | null
+  trackingNumber?: string | null
+  trackingUrl?: string | null
+  shippedAt?: Date | string | null
   quantity: number
   inventoryReserved?: number
   order: Prisma.OrderCreateNestedOneWithoutItemsInput
@@ -681,6 +865,14 @@ export type OrderItemUncheckedCreateWithoutProductInput = {
   variant?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   unitPrice: number
   unitCostUsd?: number
+  supplierUrl?: string | null
+  supplierProductId?: string | null
+  supplierSkuId?: string | null
+  supplierOrderRef?: string | null
+  carrier?: string | null
+  trackingNumber?: string | null
+  trackingUrl?: string | null
+  shippedAt?: Date | string | null
   quantity: number
   inventoryReserved?: number
 }
@@ -725,6 +917,14 @@ export type OrderItemScalarWhereInput = {
   variant?: Prisma.JsonNullableFilter<"OrderItem">
   unitPrice?: Prisma.IntFilter<"OrderItem"> | number
   unitCostUsd?: Prisma.IntFilter<"OrderItem"> | number
+  supplierUrl?: Prisma.StringNullableFilter<"OrderItem"> | string | null
+  supplierProductId?: Prisma.StringNullableFilter<"OrderItem"> | string | null
+  supplierSkuId?: Prisma.StringNullableFilter<"OrderItem"> | string | null
+  supplierOrderRef?: Prisma.StringNullableFilter<"OrderItem"> | string | null
+  carrier?: Prisma.StringNullableFilter<"OrderItem"> | string | null
+  trackingNumber?: Prisma.StringNullableFilter<"OrderItem"> | string | null
+  trackingUrl?: Prisma.StringNullableFilter<"OrderItem"> | string | null
+  shippedAt?: Prisma.DateTimeNullableFilter<"OrderItem"> | Date | string | null
   quantity?: Prisma.IntFilter<"OrderItem"> | number
   inventoryReserved?: Prisma.IntFilter<"OrderItem"> | number
 }
@@ -737,6 +937,14 @@ export type OrderItemCreateWithoutVariantRecordInput = {
   variant?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   unitPrice: number
   unitCostUsd?: number
+  supplierUrl?: string | null
+  supplierProductId?: string | null
+  supplierSkuId?: string | null
+  supplierOrderRef?: string | null
+  carrier?: string | null
+  trackingNumber?: string | null
+  trackingUrl?: string | null
+  shippedAt?: Date | string | null
   quantity: number
   inventoryReserved?: number
   order: Prisma.OrderCreateNestedOneWithoutItemsInput
@@ -753,6 +961,14 @@ export type OrderItemUncheckedCreateWithoutVariantRecordInput = {
   variant?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   unitPrice: number
   unitCostUsd?: number
+  supplierUrl?: string | null
+  supplierProductId?: string | null
+  supplierSkuId?: string | null
+  supplierOrderRef?: string | null
+  carrier?: string | null
+  trackingNumber?: string | null
+  trackingUrl?: string | null
+  shippedAt?: Date | string | null
   quantity: number
   inventoryReserved?: number
 }
@@ -791,6 +1007,14 @@ export type OrderItemCreateWithoutOrderInput = {
   variant?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   unitPrice: number
   unitCostUsd?: number
+  supplierUrl?: string | null
+  supplierProductId?: string | null
+  supplierSkuId?: string | null
+  supplierOrderRef?: string | null
+  carrier?: string | null
+  trackingNumber?: string | null
+  trackingUrl?: string | null
+  shippedAt?: Date | string | null
   quantity: number
   inventoryReserved?: number
   product?: Prisma.ProductCreateNestedOneWithoutOrderItemsInput
@@ -807,6 +1031,14 @@ export type OrderItemUncheckedCreateWithoutOrderInput = {
   variant?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   unitPrice: number
   unitCostUsd?: number
+  supplierUrl?: string | null
+  supplierProductId?: string | null
+  supplierSkuId?: string | null
+  supplierOrderRef?: string | null
+  carrier?: string | null
+  trackingNumber?: string | null
+  trackingUrl?: string | null
+  shippedAt?: Date | string | null
   quantity: number
   inventoryReserved?: number
 }
@@ -847,6 +1079,14 @@ export type OrderItemCreateManyProductInput = {
   variant?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   unitPrice: number
   unitCostUsd?: number
+  supplierUrl?: string | null
+  supplierProductId?: string | null
+  supplierSkuId?: string | null
+  supplierOrderRef?: string | null
+  carrier?: string | null
+  trackingNumber?: string | null
+  trackingUrl?: string | null
+  shippedAt?: Date | string | null
   quantity: number
   inventoryReserved?: number
 }
@@ -859,6 +1099,14 @@ export type OrderItemUpdateWithoutProductInput = {
   variant?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   unitPrice?: Prisma.IntFieldUpdateOperationsInput | number
   unitCostUsd?: Prisma.IntFieldUpdateOperationsInput | number
+  supplierUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  supplierProductId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  supplierSkuId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  supplierOrderRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  carrier?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  trackingNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  trackingUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  shippedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
   inventoryReserved?: Prisma.IntFieldUpdateOperationsInput | number
   order?: Prisma.OrderUpdateOneRequiredWithoutItemsNestedInput
@@ -875,6 +1123,14 @@ export type OrderItemUncheckedUpdateWithoutProductInput = {
   variant?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   unitPrice?: Prisma.IntFieldUpdateOperationsInput | number
   unitCostUsd?: Prisma.IntFieldUpdateOperationsInput | number
+  supplierUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  supplierProductId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  supplierSkuId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  supplierOrderRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  carrier?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  trackingNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  trackingUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  shippedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
   inventoryReserved?: Prisma.IntFieldUpdateOperationsInput | number
 }
@@ -889,6 +1145,14 @@ export type OrderItemUncheckedUpdateManyWithoutProductInput = {
   variant?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   unitPrice?: Prisma.IntFieldUpdateOperationsInput | number
   unitCostUsd?: Prisma.IntFieldUpdateOperationsInput | number
+  supplierUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  supplierProductId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  supplierSkuId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  supplierOrderRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  carrier?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  trackingNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  trackingUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  shippedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
   inventoryReserved?: Prisma.IntFieldUpdateOperationsInput | number
 }
@@ -903,6 +1167,14 @@ export type OrderItemCreateManyVariantRecordInput = {
   variant?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   unitPrice: number
   unitCostUsd?: number
+  supplierUrl?: string | null
+  supplierProductId?: string | null
+  supplierSkuId?: string | null
+  supplierOrderRef?: string | null
+  carrier?: string | null
+  trackingNumber?: string | null
+  trackingUrl?: string | null
+  shippedAt?: Date | string | null
   quantity: number
   inventoryReserved?: number
 }
@@ -915,6 +1187,14 @@ export type OrderItemUpdateWithoutVariantRecordInput = {
   variant?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   unitPrice?: Prisma.IntFieldUpdateOperationsInput | number
   unitCostUsd?: Prisma.IntFieldUpdateOperationsInput | number
+  supplierUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  supplierProductId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  supplierSkuId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  supplierOrderRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  carrier?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  trackingNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  trackingUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  shippedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
   inventoryReserved?: Prisma.IntFieldUpdateOperationsInput | number
   order?: Prisma.OrderUpdateOneRequiredWithoutItemsNestedInput
@@ -931,6 +1211,14 @@ export type OrderItemUncheckedUpdateWithoutVariantRecordInput = {
   variant?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   unitPrice?: Prisma.IntFieldUpdateOperationsInput | number
   unitCostUsd?: Prisma.IntFieldUpdateOperationsInput | number
+  supplierUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  supplierProductId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  supplierSkuId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  supplierOrderRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  carrier?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  trackingNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  trackingUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  shippedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
   inventoryReserved?: Prisma.IntFieldUpdateOperationsInput | number
 }
@@ -945,6 +1233,14 @@ export type OrderItemUncheckedUpdateManyWithoutVariantRecordInput = {
   variant?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   unitPrice?: Prisma.IntFieldUpdateOperationsInput | number
   unitCostUsd?: Prisma.IntFieldUpdateOperationsInput | number
+  supplierUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  supplierProductId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  supplierSkuId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  supplierOrderRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  carrier?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  trackingNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  trackingUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  shippedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
   inventoryReserved?: Prisma.IntFieldUpdateOperationsInput | number
 }
@@ -959,6 +1255,14 @@ export type OrderItemCreateManyOrderInput = {
   variant?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   unitPrice: number
   unitCostUsd?: number
+  supplierUrl?: string | null
+  supplierProductId?: string | null
+  supplierSkuId?: string | null
+  supplierOrderRef?: string | null
+  carrier?: string | null
+  trackingNumber?: string | null
+  trackingUrl?: string | null
+  shippedAt?: Date | string | null
   quantity: number
   inventoryReserved?: number
 }
@@ -971,6 +1275,14 @@ export type OrderItemUpdateWithoutOrderInput = {
   variant?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   unitPrice?: Prisma.IntFieldUpdateOperationsInput | number
   unitCostUsd?: Prisma.IntFieldUpdateOperationsInput | number
+  supplierUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  supplierProductId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  supplierSkuId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  supplierOrderRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  carrier?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  trackingNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  trackingUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  shippedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
   inventoryReserved?: Prisma.IntFieldUpdateOperationsInput | number
   product?: Prisma.ProductUpdateOneWithoutOrderItemsNestedInput
@@ -987,6 +1299,14 @@ export type OrderItemUncheckedUpdateWithoutOrderInput = {
   variant?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   unitPrice?: Prisma.IntFieldUpdateOperationsInput | number
   unitCostUsd?: Prisma.IntFieldUpdateOperationsInput | number
+  supplierUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  supplierProductId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  supplierSkuId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  supplierOrderRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  carrier?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  trackingNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  trackingUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  shippedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
   inventoryReserved?: Prisma.IntFieldUpdateOperationsInput | number
 }
@@ -1001,6 +1321,14 @@ export type OrderItemUncheckedUpdateManyWithoutOrderInput = {
   variant?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   unitPrice?: Prisma.IntFieldUpdateOperationsInput | number
   unitCostUsd?: Prisma.IntFieldUpdateOperationsInput | number
+  supplierUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  supplierProductId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  supplierSkuId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  supplierOrderRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  carrier?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  trackingNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  trackingUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  shippedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
   inventoryReserved?: Prisma.IntFieldUpdateOperationsInput | number
 }
@@ -1018,6 +1346,14 @@ export type OrderItemSelect<ExtArgs extends runtime.Types.Extensions.InternalArg
   variant?: boolean
   unitPrice?: boolean
   unitCostUsd?: boolean
+  supplierUrl?: boolean
+  supplierProductId?: boolean
+  supplierSkuId?: boolean
+  supplierOrderRef?: boolean
+  carrier?: boolean
+  trackingNumber?: boolean
+  trackingUrl?: boolean
+  shippedAt?: boolean
   quantity?: boolean
   inventoryReserved?: boolean
   order?: boolean | Prisma.OrderDefaultArgs<ExtArgs>
@@ -1036,6 +1372,14 @@ export type OrderItemSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Ext
   variant?: boolean
   unitPrice?: boolean
   unitCostUsd?: boolean
+  supplierUrl?: boolean
+  supplierProductId?: boolean
+  supplierSkuId?: boolean
+  supplierOrderRef?: boolean
+  carrier?: boolean
+  trackingNumber?: boolean
+  trackingUrl?: boolean
+  shippedAt?: boolean
   quantity?: boolean
   inventoryReserved?: boolean
   order?: boolean | Prisma.OrderDefaultArgs<ExtArgs>
@@ -1054,6 +1398,14 @@ export type OrderItemSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Ext
   variant?: boolean
   unitPrice?: boolean
   unitCostUsd?: boolean
+  supplierUrl?: boolean
+  supplierProductId?: boolean
+  supplierSkuId?: boolean
+  supplierOrderRef?: boolean
+  carrier?: boolean
+  trackingNumber?: boolean
+  trackingUrl?: boolean
+  shippedAt?: boolean
   quantity?: boolean
   inventoryReserved?: boolean
   order?: boolean | Prisma.OrderDefaultArgs<ExtArgs>
@@ -1072,11 +1424,19 @@ export type OrderItemSelectScalar = {
   variant?: boolean
   unitPrice?: boolean
   unitCostUsd?: boolean
+  supplierUrl?: boolean
+  supplierProductId?: boolean
+  supplierSkuId?: boolean
+  supplierOrderRef?: boolean
+  carrier?: boolean
+  trackingNumber?: boolean
+  trackingUrl?: boolean
+  shippedAt?: boolean
   quantity?: boolean
   inventoryReserved?: boolean
 }
 
-export type OrderItemOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "orderId" | "productId" | "variantId" | "titleEn" | "titleAr" | "image" | "variant" | "unitPrice" | "unitCostUsd" | "quantity" | "inventoryReserved", ExtArgs["result"]["orderItem"]>
+export type OrderItemOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "orderId" | "productId" | "variantId" | "titleEn" | "titleAr" | "image" | "variant" | "unitPrice" | "unitCostUsd" | "supplierUrl" | "supplierProductId" | "supplierSkuId" | "supplierOrderRef" | "carrier" | "trackingNumber" | "trackingUrl" | "shippedAt" | "quantity" | "inventoryReserved", ExtArgs["result"]["orderItem"]>
 export type OrderItemInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   order?: boolean | Prisma.OrderDefaultArgs<ExtArgs>
   product?: boolean | Prisma.OrderItem$productArgs<ExtArgs>
@@ -1111,6 +1471,14 @@ export type $OrderItemPayload<ExtArgs extends runtime.Types.Extensions.InternalA
     variant: runtime.JsonValue | null
     unitPrice: number
     unitCostUsd: number
+    supplierUrl: string | null
+    supplierProductId: string | null
+    supplierSkuId: string | null
+    supplierOrderRef: string | null
+    carrier: string | null
+    trackingNumber: string | null
+    trackingUrl: string | null
+    shippedAt: Date | null
     quantity: number
     inventoryReserved: number
   }, ExtArgs["result"]["orderItem"]>
@@ -1549,6 +1917,14 @@ export interface OrderItemFieldRefs {
   readonly variant: Prisma.FieldRef<"OrderItem", 'Json'>
   readonly unitPrice: Prisma.FieldRef<"OrderItem", 'Int'>
   readonly unitCostUsd: Prisma.FieldRef<"OrderItem", 'Int'>
+  readonly supplierUrl: Prisma.FieldRef<"OrderItem", 'String'>
+  readonly supplierProductId: Prisma.FieldRef<"OrderItem", 'String'>
+  readonly supplierSkuId: Prisma.FieldRef<"OrderItem", 'String'>
+  readonly supplierOrderRef: Prisma.FieldRef<"OrderItem", 'String'>
+  readonly carrier: Prisma.FieldRef<"OrderItem", 'String'>
+  readonly trackingNumber: Prisma.FieldRef<"OrderItem", 'String'>
+  readonly trackingUrl: Prisma.FieldRef<"OrderItem", 'String'>
+  readonly shippedAt: Prisma.FieldRef<"OrderItem", 'DateTime'>
   readonly quantity: Prisma.FieldRef<"OrderItem", 'Int'>
   readonly inventoryReserved: Prisma.FieldRef<"OrderItem", 'Int'>
 }

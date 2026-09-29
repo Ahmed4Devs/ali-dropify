@@ -6,12 +6,12 @@ const withNextIntl = createNextIntlPlugin("./i18n/request.ts");
 const isDevelopment = process.env.NODE_ENV === "development";
 const contentSecurityPolicy = [
   "default-src 'self'",
-  `script-src 'self' 'unsafe-inline'${isDevelopment ? " 'unsafe-eval'" : ""} https://cdn.paddle.com https://www.googletagmanager.com https://connect.facebook.net https://analytics.tiktok.com`,
+  `script-src 'self' 'unsafe-inline'${isDevelopment ? " 'unsafe-eval'" : ""} https://www.googletagmanager.com https://connect.facebook.net https://analytics.tiktok.com`,
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob: https://picsum.photos https://*.alicdn.com https://www.google-analytics.com https://www.facebook.com https://analytics.tiktok.com",
   "font-src 'self' data:",
-  "connect-src 'self' https://*.paddle.com https://*.paddle.dev https://www.google-analytics.com https://analytics.google.com https://stats.g.doubleclick.net https://www.facebook.com https://analytics.tiktok.com",
-  "frame-src https://*.paddle.com https://*.paddle.dev https://www.googletagmanager.com",
+  "connect-src 'self' https://www.google-analytics.com https://analytics.google.com https://stats.g.doubleclick.net https://www.facebook.com https://analytics.tiktok.com",
+  "frame-src https://www.googletagmanager.com",
   "worker-src 'self' blob:",
   "object-src 'none'",
   "base-uri 'self'",

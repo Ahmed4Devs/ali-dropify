@@ -5,6 +5,7 @@ import {
   cancelProviderCheckout,
   inspectProviderCheckout,
   type ProviderOrder,
+  isSupportedPaymentMethod,
 } from "@/lib/payments/provider-operations";
 import { markOrderPaid } from "@/lib/payments/shared";
 import { releaseOrderInventory } from "@/lib/inventory";
@@ -26,6 +27,7 @@ function toProviderOrder(order: {
   paymentExpiresAt: Date | null;
 }) {
   if (!order.paymentMethod) return null;
+  if (!isSupportedPaymentMethod(order.paymentMethod)) return null;
   return { ...order, paymentMethod: order.paymentMethod } satisfies ProviderOrder;
 }
 

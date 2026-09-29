@@ -18,6 +18,7 @@ import {
   reserveCartInventory,
 } from "@/lib/inventory";
 import { consumeRateLimit } from "@/lib/rate-limit";
+import { isSupportedShippingCountry, SAUDI_SHIPPING_COUNTRY } from "@/lib/shipping-destination";
 
 const checkoutSchema = z.object({
   checkoutKey: z.uuid(),
@@ -33,7 +34,7 @@ const checkoutSchema = z.object({
   street: z.string().trim().min(3).max(160),
   apartment: z.string().trim().max(100).optional(),
   zip: z.string().trim().min(2).max(20),
-  paymentMethod: z.enum(["STRIPE", "MOYASAR", "PAYPAL", "PADDLE", "LEMONSQUEEZY"]),
+  paymentMethod: z.enum(["STRIPE", "MOYASAR", "PAYPAL"]),
 });
 
 export async function placeOrderAction(input: z.input<typeof checkoutSchema>) {
@@ -41,17 +42,13 @@ export async function placeOrderAction(input: z.input<typeof checkoutSchema>) {
   const locale = parsed.success ? parsed.data.locale : input.locale === "ar" ? "ar" : "en";
   const t = await getTranslations({ locale, namespace: "checkout.errors" });
   if (!parsed.success) return { ok: false as const, error: t("details") };
-  const paddleEnabled = process.env.NEXT_PUBLIC_PADDLE_ENABLED === "true";
-  const lemonSqueezyEnabled = process.env.NEXT_PUBLIC_LEMONSQUEEZY_ENABLED === "true";
+  if (!isSupportedShippingCountry(parsed.data.country)) {
+    return { ok: false as const, error: t("shippingCountryUnavailable") };
+  }
   const validMethods: Record<CurrencyCode, PaymentMethodCode[]> = {
-    USD: [
-      "STRIPE",
-      "PAYPAL",
-      ...(paddleEnabled ? ["PADDLE" as const] : []),
-      ...(lemonSqueezyEnabled ? ["LEMONSQUEEZY" as const] : []),
-    ],
+    USD: ["STRIPE", "PAYPAL"],
     SAR: ["STRIPE", "MOYASAR"],
-    AUD: ["STRIPE", "PAYPAL", ...(paddleEnabled ? ["PADDLE" as const] : [])],
+    AUD: ["STRIPE", "PAYPAL"],
   };
   if (!validMethods[parsed.data.currency].includes(parsed.data.paymentMethod)) {
     return { ok: false as const, error: t("paymentUnavailable") };
@@ -292,7 +289,7 @@ export async function placeOrderAction(input: z.input<typeof checkoutSchema>) {
           const address = {
             fullName: parsed.data.fullName,
             phone: parsed.data.phone,
-            country: parsed.data.country,
+            country: SAUDI_SHIPPING_COUNTRY,
             state: parsed.data.state,
             city: parsed.data.city,
             street: parsed.data.street,
@@ -326,7 +323,10 @@ export async function placeOrderAction(input: z.input<typeof checkoutSchema>) {
                     ? (item.variant.options as Prisma.InputJsonValue)
                     : Prisma.JsonNull,
                   unitPrice,
-                  unitCostUsd: item.product.costUsd,
+                  unitCostUsd: item.variant?.costUsd ?? item.product.costUsd,
+                  supplierUrl: item.product.aliexpressUrl,
+                  supplierProductId: item.product.aliexpressProductId,
+                  supplierSkuId: item.variant?.aliexpressSkuId ?? null,
                   quantity: item.quantity,
                   inventoryReserved: reservations.get(item.id) ?? 0,
                 })),
@@ -365,7 +365,7 @@ export async function placeOrderAction(input: z.input<typeof checkoutSchema>) {
     }
     const paymentLeaseToken = randomUUID();
     const leaseCutoff = new Date(Date.now() - 5 * 60_000);
-    const canReclaimExpiredLease = !["MOYASAR", "PADDLE", "LEMONSQUEEZY"].includes(
+    const canReclaimExpiredLease = !["MOYASAR"].includes(
       order.paymentMethod ?? "",
     );
     const lease = await prisma.order.updateMany({
@@ -471,8 +471,6 @@ export async function placeOrderAction(input: z.input<typeof checkoutSchema>) {
       "Stripe is not configured",
       "PayPal is not configured",
       "Moyasar is not configured",
-      "Paddle is not configured",
-      "Lemon Squeezy is not configured",
     ]);
     return {
       ok: false as const,

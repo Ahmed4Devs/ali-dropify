@@ -121,8 +121,10 @@ export const demoProducts = catalog.map((item, index) => {
     trackInventory: !hasOptions,
     stockQuantity: index === 8 ? 0 : 50,
     reservedQuantity: 0,
+    isPublished: true,
     isFeatured: item[9],
     aliexpressUrl: "https://www.aliexpress.com/",
+    aliexpressProductId: null,
     categoryId: item[6],
     category,
     viewsTotal: 840 - index * 47,
@@ -131,10 +133,10 @@ export const demoProducts = catalog.map((item, index) => {
     updatedAt: new Date().toISOString(),
     variants: hasOptions
       ? [
-          { id: `variant-${index}-1`, titleEn: "Sand / S", titleAr: "رملي / S", options: { color: "Sand", size: "S" }, priceUsd: null, sku: `DEMO-${index}-SAND-S`, inStock: true, trackInventory: true, stockQuantity: 20, reservedQuantity: 0 },
-          { id: `variant-${index}-2`, titleEn: "Sand / M", titleAr: "رملي / M", options: { color: "Sand", size: "M" }, priceUsd: null, sku: `DEMO-${index}-SAND-M`, inStock: true, trackInventory: true, stockQuantity: 20, reservedQuantity: 0 },
-          { id: `variant-${index}-3`, titleEn: "Black / M", titleAr: "أسود / M", options: { color: "Black", size: "M" }, priceUsd: item[3] + 200, sku: `DEMO-${index}-BLACK-M`, inStock: true, trackInventory: true, stockQuantity: 20, reservedQuantity: 0 },
-          { id: `variant-${index}-4`, titleEn: "Black / L", titleAr: "أسود / L", options: { color: "Black", size: "L" }, priceUsd: item[3] + 200, sku: `DEMO-${index}-BLACK-L`, inStock: false, trackInventory: true, stockQuantity: 0, reservedQuantity: 0 },
+          { id: `variant-${index}-1`, titleEn: "Sand / S", titleAr: "رملي / S", options: { color: "Sand", size: "S" }, priceUsd: null, costUsd: null, sku: `DEMO-${index}-SAND-S`, inStock: true, trackInventory: true, stockQuantity: 20, reservedQuantity: 0, aliexpressSkuId: null },
+          { id: `variant-${index}-2`, titleEn: "Sand / M", titleAr: "رملي / M", options: { color: "Sand", size: "M" }, priceUsd: null, costUsd: null, sku: `DEMO-${index}-SAND-M`, inStock: true, trackInventory: true, stockQuantity: 20, reservedQuantity: 0, aliexpressSkuId: null },
+          { id: `variant-${index}-3`, titleEn: "Black / M", titleAr: "أسود / M", options: { color: "Black", size: "M" }, priceUsd: item[3] + 200, costUsd: null, sku: `DEMO-${index}-BLACK-M`, inStock: true, trackInventory: true, stockQuantity: 20, reservedQuantity: 0, aliexpressSkuId: null },
+          { id: `variant-${index}-4`, titleEn: "Black / L", titleAr: "أسود / L", options: { color: "Black", size: "L" }, priceUsd: item[3] + 200, costUsd: null, sku: `DEMO-${index}-BLACK-L`, inStock: false, trackInventory: true, stockQuantity: 0, reservedQuantity: 0, aliexpressSkuId: null },
         ]
       : [],
   };

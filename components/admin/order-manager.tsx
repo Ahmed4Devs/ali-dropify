@@ -6,7 +6,7 @@ import { ExternalLinkIcon, PackageOpenIcon, SearchIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
 
-import { updateOrderStatusAction } from "@/actions/admin";
+import { updateOrderItemFulfillmentAction, updateOrderStatusAction } from "@/actions/admin";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -62,6 +62,78 @@ function isOrderStatus(value: string): value is (typeof orderStatuses)[number] {
   return orderStatuses.some((status) => status === value);
 }
 
+type FulfillmentItem = {
+  id: string;
+  title: string;
+  image: string | null;
+  quantity: number;
+  unitPrice: number;
+  aliexpressUrl: string | null;
+  supplierProductId: string | null;
+  supplierSkuId: string | null;
+  supplierOrderRef: string | null;
+  carrier: string | null;
+  trackingNumber: string | null;
+  trackingUrl: string | null;
+};
+
+function FulfillmentEditor({
+  item,
+  onSaved,
+}: {
+  item: FulfillmentItem;
+  onSaved: (item: FulfillmentItem) => void;
+}) {
+  const t = useTranslations("admin.orders");
+  const [supplierOrderRef, setSupplierOrderRef] = useState(item.supplierOrderRef ?? "");
+  const [carrier, setCarrier] = useState(item.carrier ?? "");
+  const [trackingNumber, setTrackingNumber] = useState(item.trackingNumber ?? "");
+  const [trackingUrl, setTrackingUrl] = useState(item.trackingUrl ?? "");
+  const [pending, startTransition] = useTransition();
+
+  function save() {
+    startTransition(async () => {
+      const result = await updateOrderItemFulfillmentAction({
+        orderItemId: item.id,
+        supplierOrderRef,
+        carrier,
+        trackingNumber,
+        trackingUrl,
+      });
+      if (!result.ok) {
+        toast.error(result.error);
+        return;
+      }
+      onSaved({ ...item, ...result.data });
+      toast.success(t("fulfillmentSaved"));
+    });
+  }
+
+  return (
+    <div className="mt-3 grid gap-2 border-t pt-3 sm:grid-cols-2">
+      <Label className="grid gap-1.5 text-xs">
+        {t("supplierOrderRef")}
+        <Input value={supplierOrderRef} maxLength={120} onChange={(event) => setSupplierOrderRef(event.target.value)} />
+      </Label>
+      <Label className="grid gap-1.5 text-xs">
+        {t("carrier")}
+        <Input value={carrier} maxLength={120} onChange={(event) => setCarrier(event.target.value)} />
+      </Label>
+      <Label className="grid gap-1.5 text-xs">
+        {t("trackingNumber")}
+        <Input value={trackingNumber} maxLength={120} onChange={(event) => setTrackingNumber(event.target.value)} />
+      </Label>
+      <Label className="grid gap-1.5 text-xs">
+        {t("trackingUrl")}
+        <Input type="url" value={trackingUrl} maxLength={2048} onChange={(event) => setTrackingUrl(event.target.value)} />
+      </Label>
+      <Button type="button" variant="outline" className="sm:col-span-2" disabled={pending} onClick={save}>
+        {t("saveFulfillment")}
+      </Button>
+    </div>
+  );
+}
+
 function canTransition(from: string, to: string) {
   if (from === to) return true;
   const transitions: Record<string, readonly string[]> = {
@@ -100,14 +172,7 @@ function OrderManager({
       apartment?: string;
       zip: string;
     };
-    items: {
-      id: string;
-      title: string;
-      image: string | null;
-      quantity: number;
-      unitPrice: number;
-      aliexpressUrl: string | null;
-    }[];
+    items: FulfillmentItem[];
   }[];
 }) {
   const t = useTranslations("admin.orders");
@@ -136,8 +201,6 @@ function OrderManager({
     if (method === "STRIPE") return statusT("payment.stripe");
     if (method === "MOYASAR") return statusT("payment.moyasar");
     if (method === "PAYPAL") return statusT("payment.paypal");
-    if (method === "PADDLE") return statusT("payment.paddle");
-    if (method === "LEMONSQUEEZY") return statusT("payment.lemonSqueezy");
     return common("notAvailable");
   }
 
@@ -189,7 +252,7 @@ function OrderManager({
         reason: status === "REFUNDED" ? refundReason.trim() || undefined : undefined,
       });
       if (!result.ok) {
-        toast.error(t("statusUpdateFailed"));
+        toast.error(result.error);
         return;
       }
       setSelected({ ...selected, status: result.data.status });
@@ -304,6 +367,18 @@ function OrderManager({
                             <a href={item.aliexpressUrl} target="_blank" rel="noreferrer">{t("openSupplier")} <ExternalLinkIcon /></a>
                           </Button>
                         ) : <p className="mt-1 text-xs text-muted-foreground">{t("sourceUnavailable")}</p>}
+                        {item.supplierProductId ? <p className="text-xs text-muted-foreground">{t("supplierProductId")}: {item.supplierProductId}</p> : null}
+                        {item.supplierSkuId ? <p className="text-xs text-muted-foreground">{t("supplierSkuId")}: {item.supplierSkuId}</p> : null}
+                        {["PAID", "FULFILLED", "DELIVERED"].includes(selected.status) ? (
+                          <FulfillmentEditor
+                            key={item.id}
+                            item={item}
+                            onSaved={(updated) => setSelected((current) => current && ({
+                              ...current,
+                              items: current.items.map((entry) => entry.id === updated.id ? updated : entry),
+                            }))}
+                          />
+                        ) : null}
                       </div>
                     </div>
                   ))}

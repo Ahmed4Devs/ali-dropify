@@ -3,11 +3,6 @@ import "server-only";
 import Stripe from "stripe";
 
 import { getPayPalAccessToken, getPayPalBaseUrl } from "@/lib/payments/paypal";
-import { getPaddleBaseUrl, getPaddleHeaders } from "@/lib/payments/paddle";
-import {
-  getLemonSqueezyHeaders,
-  lemonSqueezyBaseUrl,
-} from "@/lib/payments/lemonsqueezy";
 import { usesDummyCredential } from "@/lib/payments/shared";
 import { decimalToMinorUnits } from "@/lib/payments/amounts";
 import type { PaymentMethodCode } from "@/types";
@@ -43,6 +38,12 @@ export type ProviderRefund = {
   paymentRef: string | null;
 };
 
+export function isSupportedPaymentMethod(
+  value: string | null,
+): value is PaymentMethodCode {
+  return value === "STRIPE" || value === "MOYASAR" || value === "PAYPAL";
+}
+
 type PayPalCapture = {
   id?: string;
   status?: string;
@@ -76,47 +77,6 @@ type MoyasarInvoice = {
   expired_at?: string | null;
   metadata?: { orderId?: string };
   payments?: MoyasarPayment[];
-};
-
-type PaddleTransaction = {
-  id?: string;
-  status?: string;
-  currency_code?: string;
-  custom_data?: { orderId?: string; expectedTotal?: string; currency?: string };
-  details?: { totals?: { grand_total?: string } };
-};
-
-type PaddleAdjustment = {
-  id?: string;
-  action?: string;
-  type?: string;
-  status?: string;
-  transaction_id?: string;
-  currency_code?: string;
-  totals?: { total?: string };
-};
-
-type LemonSqueezyCheckout = {
-  id?: string;
-  attributes?: {
-    custom_price?: number | null;
-    expires_at?: string | null;
-    checkout_data?: {
-      custom?: { orderId?: string; expectedTotal?: string; currency?: string };
-    };
-  };
-};
-
-type LemonSqueezyOrder = {
-  id?: string;
-  attributes?: {
-    currency?: string;
-    total?: number;
-    status?: string;
-    refunded?: boolean;
-    refunded_amount?: number;
-    test_mode?: boolean;
-  };
 };
 
 const requestTimeout = 15_000;
@@ -163,62 +123,6 @@ async function getMoyasarInvoice(checkoutId: string) {
   if (response.status === 404) return null;
   if (!response.ok) throw new Error(`Moyasar invoice lookup failed (${response.status})`);
   return (await response.json()) as MoyasarInvoice;
-}
-
-async function getPaddleTransaction(checkoutId: string) {
-  const response = await fetch(
-    `${getPaddleBaseUrl()}/transactions/${encodeURIComponent(checkoutId)}`,
-    {
-      headers: getPaddleHeaders(),
-      cache: "no-store",
-      signal: AbortSignal.timeout(requestTimeout),
-    },
-  );
-  if (response.status === 404) return null;
-  if (!response.ok) throw new Error(`Paddle transaction lookup failed (${response.status})`);
-  return ((await response.json()) as { data?: PaddleTransaction }).data ?? null;
-}
-
-async function getPaddleAdjustment(adjustmentId: string) {
-  const response = await fetch(
-    `${getPaddleBaseUrl()}/adjustments/${encodeURIComponent(adjustmentId)}`,
-    {
-      headers: getPaddleHeaders(),
-      cache: "no-store",
-      signal: AbortSignal.timeout(requestTimeout),
-    },
-  );
-  if (response.status === 404) return null;
-  if (!response.ok) throw new Error(`Paddle adjustment lookup failed (${response.status})`);
-  return ((await response.json()) as { data?: PaddleAdjustment }).data ?? null;
-}
-
-async function getLemonSqueezyCheckout(checkoutId: string) {
-  const response = await fetch(
-    `${lemonSqueezyBaseUrl}/checkouts/${encodeURIComponent(checkoutId)}`,
-    {
-      headers: getLemonSqueezyHeaders(),
-      cache: "no-store",
-      signal: AbortSignal.timeout(requestTimeout),
-    },
-  );
-  if (response.status === 404) return null;
-  if (!response.ok) throw new Error(`Lemon Squeezy checkout lookup failed (${response.status})`);
-  return ((await response.json()) as { data?: LemonSqueezyCheckout }).data ?? null;
-}
-
-async function getLemonSqueezyOrder(orderId: string) {
-  const response = await fetch(
-    `${lemonSqueezyBaseUrl}/orders/${encodeURIComponent(orderId)}`,
-    {
-      headers: getLemonSqueezyHeaders(),
-      cache: "no-store",
-      signal: AbortSignal.timeout(requestTimeout),
-    },
-  );
-  if (response.status === 404) return null;
-  if (!response.ok) throw new Error(`Lemon Squeezy order lookup failed (${response.status})`);
-  return ((await response.json()) as { data?: LemonSqueezyOrder }).data ?? null;
 }
 
 function validatePayPalOrder(order: ProviderOrder, remote: PayPalOrder) {
@@ -294,45 +198,6 @@ export async function inspectProviderCheckout(
       return { state: "active" };
     }
 
-    if (order.paymentMethod === "PADDLE") {
-      const remote = await getPaddleTransaction(checkoutId);
-      if (!remote) return { state: "unknown", message: "Paddle transaction was not found" };
-      if (
-        remote.id !== checkoutId ||
-        remote.custom_data?.orderId !== order.id ||
-        remote.custom_data.expectedTotal !== String(order.total) ||
-        remote.custom_data.currency !== order.currency ||
-        remote.currency_code !== order.currency ||
-        remote.details?.totals?.grand_total !== String(order.total)
-      ) {
-        return { state: "unknown", message: "Paddle checkout details do not match the order" };
-      }
-      if (remote.status === "completed") return { state: "paid", paymentRef: checkoutId };
-      if (["canceled", "past_due"].includes(remote.status ?? "")) return { state: "expired" };
-      return { state: "active" };
-    }
-
-    if (order.paymentMethod === "LEMONSQUEEZY") {
-      const remote = await getLemonSqueezyCheckout(checkoutId);
-      if (!remote) return { state: "unknown", message: "Lemon Squeezy checkout was not found" };
-      const custom = remote.attributes?.checkout_data?.custom;
-      if (
-        remote.id !== checkoutId ||
-        remote.attributes?.custom_price !== order.total ||
-        custom?.orderId !== order.id ||
-        custom.expectedTotal !== String(order.total) ||
-        custom.currency !== order.currency
-      ) {
-        return { state: "unknown", message: "Lemon Squeezy checkout details do not match the order" };
-      }
-      const expiresAt = remote.attributes.expires_at
-        ? new Date(remote.attributes.expires_at)
-        : order.paymentExpiresAt;
-      return expiresAt && expiresAt <= new Date()
-        ? { state: "expired" }
-        : { state: "active" };
-    }
-
     const remote = await getMoyasarInvoice(checkoutId);
     if (!remote) return { state: "unknown", message: "Moyasar invoice was not found" };
     if (!validateMoyasarInvoice(order, remote)) {
@@ -381,22 +246,6 @@ export async function cancelProviderCheckout(
       return invoice.status === "canceled" || invoice.status === "expired"
         ? { state: "expired" }
         : { state: "unknown", message: `Unexpected Moyasar invoice status: ${invoice.status ?? "unknown"}` };
-    }
-    if (order.paymentMethod === "PADDLE") {
-      const response = await fetch(
-        `${getPaddleBaseUrl()}/transactions/${encodeURIComponent(checkoutId)}`,
-        {
-          method: "PATCH",
-          headers: getPaddleHeaders(),
-          body: JSON.stringify({ status: "canceled" }),
-          signal: AbortSignal.timeout(requestTimeout),
-        },
-      );
-      if (!response.ok) return { state: "unknown", message: `Paddle cancellation failed (${response.status})` };
-      const transaction = ((await response.json()) as { data?: PaddleTransaction }).data;
-      return transaction?.status === "canceled"
-        ? { state: "expired" }
-        : { state: "unknown", message: `Unexpected Paddle transaction status: ${transaction?.status ?? "unknown"}` };
     }
     return { state: "active" };
   } catch (error) {
@@ -473,95 +322,6 @@ export async function refundProviderPayment(
       if (refund.status === "COMPLETED") return { state: "succeeded", providerRef: refund.id };
       if (refund.status === "PENDING") return { state: "pending", providerRef: refund.id };
       return { state: "failed", message: `PayPal refund status: ${refund.status ?? "unknown"}` };
-    }
-
-    if (order.paymentMethod === "PADDLE") {
-      const transactionId = order.providerCheckoutId ?? order.paymentRef;
-      if (!transactionId) return { state: "failed", message: "Paddle transaction was not found" };
-      let response: Response;
-      try {
-        response = await fetch(`${getPaddleBaseUrl()}/adjustments`, {
-          method: "POST",
-          headers: getPaddleHeaders(),
-          body: JSON.stringify({
-            action: "refund",
-            type: "full",
-            transaction_id: transactionId,
-            reason: `Refund for order ${order.id}`,
-          }),
-          signal: AbortSignal.timeout(requestTimeout),
-        });
-      } catch (error) {
-        return {
-          state: "needs_review",
-          message: error instanceof Error
-            ? `Paddle refund outcome is unknown: ${error.message}`
-            : "Paddle refund outcome is unknown",
-        };
-      }
-      if (!response.ok) {
-        const retryIsUnsafe = response.status >= 500 || [408, 409, 425, 429].includes(response.status);
-        return retryIsUnsafe
-          ? { state: "needs_review", message: `Paddle refund outcome is unknown (${response.status})` }
-          : { state: "failed", message: `Paddle refund failed (${response.status})` };
-      }
-      let adjustment: PaddleAdjustment | undefined;
-      try {
-        adjustment = ((await response.json()) as { data?: PaddleAdjustment }).data;
-      } catch {
-        return { state: "needs_review", message: "Paddle refund response was unreadable" };
-      }
-      if (!adjustment?.id) return { state: "needs_review", message: "Paddle returned no adjustment reference" };
-      if (adjustment.status === "approved") return { state: "succeeded", providerRef: adjustment.id };
-      if (adjustment.status === "pending_approval") return { state: "pending", providerRef: adjustment.id };
-      return { state: "failed", message: `Paddle refund status: ${adjustment.status ?? "unknown"}` };
-    }
-
-    if (order.paymentMethod === "LEMONSQUEEZY") {
-      if (!order.paymentRef) return { state: "failed", message: "Lemon Squeezy order was not found" };
-      let response: Response;
-      try {
-        response = await fetch(
-          `${lemonSqueezyBaseUrl}/orders/${encodeURIComponent(order.paymentRef)}/refund`,
-          {
-            method: "POST",
-            headers: getLemonSqueezyHeaders(),
-            body: JSON.stringify({
-              data: {
-                type: "orders",
-                id: order.paymentRef,
-                attributes: { amount: order.total },
-              },
-            }),
-            signal: AbortSignal.timeout(requestTimeout),
-          },
-        );
-      } catch (error) {
-        return {
-          state: "needs_review",
-          message: error instanceof Error
-            ? `Lemon Squeezy refund outcome is unknown: ${error.message}`
-            : "Lemon Squeezy refund outcome is unknown",
-        };
-      }
-      if (!response.ok) {
-        const retryIsUnsafe = response.status >= 500 || [408, 409, 425, 429].includes(response.status);
-        return retryIsUnsafe
-          ? { state: "needs_review", message: `Lemon Squeezy refund outcome is unknown (${response.status})` }
-          : { state: "failed", message: `Lemon Squeezy refund failed (${response.status})` };
-      }
-      let body: unknown;
-      try {
-        body = await response.json();
-      } catch {
-        return { state: "needs_review", message: "Lemon Squeezy refund response was unreadable" };
-      }
-      const remote = (body as { data?: LemonSqueezyOrder }).data ?? body as LemonSqueezyOrder;
-      if (!remote?.id) return { state: "needs_review", message: "Lemon Squeezy returned no order reference" };
-      if (remote.attributes?.refunded && (remote.attributes.refunded_amount ?? 0) >= order.total) {
-        return { state: "succeeded", providerRef: remote.id };
-      }
-      return { state: "pending", providerRef: remote.id };
     }
 
     if (!order.paymentRef) return { state: "failed", message: "Moyasar payment reference was not found" };
@@ -653,40 +413,6 @@ export async function inspectProviderRefund(
         return { state: "pending", providerRef: remote.id };
       }
       return { state: "failed", message: `PayPal refund status: ${remote.status ?? "unknown"}` };
-    }
-
-    if (refund.provider === "PADDLE") {
-      const remote = await getPaddleAdjustment(refund.providerRef);
-      if (
-        !remote ||
-        remote.id !== refund.providerRef ||
-        remote.action !== "refund" ||
-        remote.type !== "full" ||
-        remote.transaction_id !== refund.paymentRef ||
-        remote.currency_code !== refund.currency ||
-        remote.totals?.total !== String(refund.amount)
-      ) {
-        return { state: "needs_review", message: "Paddle refund details do not match" };
-      }
-      if (remote.status === "approved") return { state: "succeeded", providerRef: remote.id };
-      if (remote.status === "pending_approval") return { state: "pending", providerRef: remote.id };
-      return { state: "failed", message: `Paddle refund status: ${remote.status ?? "unknown"}` };
-    }
-
-    if (refund.provider === "LEMONSQUEEZY") {
-      const remote = await getLemonSqueezyOrder(refund.providerRef);
-      if (
-        !remote ||
-        remote.id !== refund.providerRef ||
-        remote.attributes?.currency !== refund.currency ||
-        remote.attributes.total !== refund.amount
-      ) {
-        return { state: "needs_review", message: "Lemon Squeezy refund details do not match" };
-      }
-      if (remote.attributes.refunded && (remote.attributes.refunded_amount ?? 0) >= refund.amount) {
-        return { state: "succeeded", providerRef: remote.id };
-      }
-      return { state: "pending", providerRef: remote.id };
     }
 
     if (!refund.paymentRef) {

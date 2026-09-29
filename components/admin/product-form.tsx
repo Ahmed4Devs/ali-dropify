@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
+import { parseAliExpressProductUrl } from "@/lib/aliexpress";
 
 import {
   createProductAction,
@@ -117,10 +118,12 @@ function productVariantsToDrafts(variants: VariantData[]): VariantDraft[] {
       Object.entries(variant.options).map(([key, value]) => [key, optionText(value)]),
     ),
     priceUsd: centsToDollars(variant.priceUsd),
+    costUsd: centsToDollars(variant.costUsd),
     sku: variant.sku ?? "",
     inStock: variant.inStock,
     trackInventory: variant.trackInventory,
     stockQuantity: String(variant.stockQuantity),
+    aliexpressSkuId: variant.aliexpressSkuId ?? "",
   }));
 }
 
@@ -244,6 +247,7 @@ function ProductForm({ categories, product }: ProductFormProps) {
     String(product?.stockQuantity ?? 0),
   );
   const [isFeatured, setIsFeatured] = useState(product?.isFeatured ?? false);
+  const [isPublished, setIsPublished] = useState(product?.isPublished ?? false);
   const [aliexpressUrl, setAliexpressUrl] = useState(product?.aliexpressUrl ?? "");
   const [images, setImages] = useState<string[]>(product?.images ?? []);
   const [imageUrl, setImageUrl] = useState("");
@@ -381,10 +385,12 @@ function ProductForm({ categories, product }: ProductFormProps) {
           titleAr: combination.map((choice) => choice.valueAr).join(" / "),
           options: variantOptions,
           priceUsd: previous?.priceUsd ?? "",
+          costUsd: previous?.costUsd ?? "",
           sku: previous?.sku ?? "",
           inStock: previous?.inStock ?? true,
           trackInventory: previous?.trackInventory ?? true,
           stockQuantity: previous?.stockQuantity ?? "0",
+          aliexpressSkuId: previous?.aliexpressSkuId ?? "",
         };
       }),
     );
@@ -392,6 +398,21 @@ function ProductForm({ categories, product }: ProductFormProps) {
 
   function submitProduct(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+
+    if (aliexpressUrl.trim() && !parseAliExpressProductUrl(aliexpressUrl)) {
+      toast.error(mutationErrors("adminInvalidAliExpressUrl"));
+      return;
+    }
+    const supplierSkuIds = variants.map((variant) => variant.aliexpressSkuId.trim()).filter(Boolean);
+    if ((supplierSkuIds.length && !aliexpressUrl.trim()) ||
+      supplierSkuIds.some((id) => !/^[1-9]\d*$/.test(id)) ||
+      new Set(supplierSkuIds).size !== supplierSkuIds.length ||
+      (isPublished && aliexpressUrl.trim() &&
+        (!product?.isPublished || parseAliExpressProductUrl(aliexpressUrl)?.url !== parseAliExpressProductUrl(product.aliexpressUrl ?? "")?.url) &&
+        supplierSkuIds.length !== variants.length)) {
+      toast.error(mutationErrors("adminInvalidSupplierVariant"));
+      return;
+    }
 
     const priceInCents = dollarsToCents(priceUsd);
     const compareAtInCents = compareAtUsd.trim()
@@ -418,6 +439,14 @@ function ProductForm({ categories, product }: ProductFormProps) {
       toast.error(validation("nonNegative"));
       return;
     }
+    if (variants.some((variant) => {
+      if (!variant.costUsd.trim()) return false;
+      const cost = dollarsToCents(variant.costUsd);
+      return !Number.isInteger(cost) || cost < 0;
+    })) {
+      toast.error(validation("nonNegative"));
+      return;
+    }
 
     const persistedVariantIds = new Set(
       product?.variants.map((variant) => variant.id) ?? [],
@@ -438,6 +467,7 @@ function ProductForm({ categories, product }: ProductFormProps) {
       trackInventory: variants.length === 0 && trackInventory,
       stockQuantity: stockQuantityValue,
       isFeatured,
+      isPublished,
       aliexpressUrl: aliexpressUrl.trim() || null,
       categoryId: categoryId || null,
       variants: variants.map((variant) => {
@@ -458,10 +488,14 @@ function ProductForm({ categories, product }: ProductFormProps) {
           priceUsd: variant.priceUsd.trim()
             ? dollarsToCents(variant.priceUsd)
             : null,
+          costUsd: variant.costUsd.trim()
+            ? dollarsToCents(variant.costUsd)
+            : null,
           sku: variant.sku.trim() || null,
           inStock: variant.inStock,
           trackInventory: variant.trackInventory,
           stockQuantity: Number(variant.stockQuantity),
+          aliexpressSkuId: variant.aliexpressSkuId.trim() || null,
         };
         return persistedVariantIds.has(variant.id)
           ? { ...variantInput, id: variant.id }
@@ -672,6 +706,19 @@ function ProductForm({ categories, product }: ProductFormProps) {
               checked={isFeatured}
               onCheckedChange={setIsFeatured}
             />
+          </div>
+          <div className="grid gap-2 rounded-xl border p-4">
+            <div className="flex items-center justify-between gap-4">
+              <Label htmlFor="product-published" className="leading-snug">
+                {t("published")}
+              </Label>
+              <Switch
+                id="product-published"
+                checked={isPublished}
+                onCheckedChange={setIsPublished}
+              />
+            </div>
+            <p className="text-xs text-muted-foreground">{t("publishedHint")}</p>
           </div>
         </div>
       </SectionCard>
@@ -894,8 +941,10 @@ function ProductForm({ categories, product }: ProductFormProps) {
               <TableHeader>
                 <TableRow>
                   <TableHead>{t("variantName")}</TableHead>
+                  <TableHead>{t("aliexpressSkuId")}</TableHead>
                   <TableHead>{t("sku")}</TableHead>
                   <TableHead>{t("priceOverride")}</TableHead>
+                  <TableHead>{t("costOverride")}</TableHead>
                   <TableHead>{t("inventory")}</TableHead>
                   <TableHead className="text-end">{common("actions")}</TableHead>
                 </TableRow>
@@ -908,6 +957,23 @@ function ProductForm({ categories, product }: ProductFormProps) {
                       <p dir="rtl" className="mt-0.5 text-start text-xs text-muted-foreground">
                         {variant.titleAr}
                       </p>
+                    </TableCell>
+                    <TableCell className="min-w-40">
+                      <Input
+                        value={variant.aliexpressSkuId}
+                        inputMode="numeric"
+                        placeholder={t("aliexpressSkuIdPlaceholder")}
+                        aria-label={`${t("aliexpressSkuId")} ${variant.titleEn}`}
+                        onChange={(event) =>
+                          setVariants((current) =>
+                            current.map((entry) =>
+                              entry.id === variant.id
+                                ? { ...entry, aliexpressSkuId: event.target.value }
+                                : entry,
+                            ),
+                          )
+                        }
+                      />
                     </TableCell>
                     <TableCell className="min-w-40">
                       <Input
@@ -940,6 +1006,26 @@ function ProductForm({ categories, product }: ProductFormProps) {
                             current.map((entry) =>
                               entry.id === variant.id
                                 ? { ...entry, priceUsd: event.target.value }
+                                : entry,
+                            ),
+                          )
+                        }
+                      />
+                    </TableCell>
+                    <TableCell className="min-w-40">
+                      <Input
+                        type="number"
+                        inputMode="decimal"
+                        min="0"
+                        step="0.01"
+                        value={variant.costUsd}
+                        placeholder={costUsd || "0.00"}
+                        aria-label={`${t("costOverride")} ${variant.titleEn}`}
+                        onChange={(event) =>
+                          setVariants((current) =>
+                            current.map((entry) =>
+                              entry.id === variant.id
+                                ? { ...entry, costUsd: event.target.value }
                                 : entry,
                             ),
                           )
@@ -1042,6 +1128,7 @@ function ProductForm({ categories, product }: ProductFormProps) {
             onChange={(event) => setAliexpressUrl(event.target.value)}
           />
         </Field>
+        <p className="mt-2 text-xs text-muted-foreground">{t("aliexpressUrlHint")}</p>
       </SectionCard>
 
       <div className="flex flex-col-reverse gap-3 rounded-xl border bg-background p-4 shadow-sm sm:flex-row sm:items-center sm:justify-end">

@@ -192,6 +192,7 @@ function ProductList({ products, categories }: ProductListProps) {
                   <TableRow>
                     <TableHead>{t("thumbnail")}</TableHead>
                     <TableHead>{t("product")}</TableHead>
+                    <TableHead>{t("visibility")}</TableHead>
                     <TableHead>{common("price")}</TableHead>
                     <TableHead>{t("cost")}</TableHead>
                     <TableHead>{t("margin")}</TableHead>
@@ -237,6 +238,11 @@ function ProductList({ products, categories }: ProductListProps) {
                           <p className="mt-0.5 truncate text-xs text-muted-foreground">
                             /{product.slug}
                           </p>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant={product.isPublished ? "success" : "secondary"}>
+                            {product.isPublished ? t("published") : t("draft")}
+                          </Badge>
                         </TableCell>
                         <TableCell className="font-medium">
                           {formatUsdPrice(product.priceUsd, "USD", "en")}

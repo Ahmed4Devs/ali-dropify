@@ -21,7 +21,9 @@ export async function reserveCartInventory(
   const reservations = new Map<string, number>();
   for (const line of lines) {
     const target = targetFor(line);
-    if (!line.product.inStock || !target.inStock) throw new Error("CHECKOUT_STOCK_CHANGED");
+    if (line.product.isPublished === false || !line.product.inStock || !target.inStock) {
+      throw new Error("CHECKOUT_STOCK_CHANGED");
+    }
     if (!target.trackInventory) {
       reservations.set(line.id, 0);
       continue;

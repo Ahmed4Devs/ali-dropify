@@ -8,6 +8,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
 import { Prisma } from "@/generated/prisma/client";
+import { parseAliExpressProductUrl } from "@/lib/aliexpress";
 import { requireAdmin } from "@/lib/dal";
 import { prisma } from "@/lib/prisma";
 import { reconcilePendingOrder } from "@/lib/payments/lifecycle";
@@ -117,10 +118,12 @@ const variantSchema = z
         message: "Each variant needs at least one option",
       }),
     priceUsd: z.number().int().min(0).nullable().optional().default(null),
+    costUsd: z.number().int().min(0).max(1_000_000_000).nullable().optional().default(null),
     sku: skuSchema,
     inStock: z.boolean().optional().default(true),
     trackInventory: z.boolean().optional().default(false),
     stockQuantity: z.number().int().min(0).max(1_000_000_000).optional().default(0),
+    aliexpressSkuId: z.string().trim().regex(/^[1-9]\d*$/).max(80).nullable().optional().default(null),
   })
   .strict();
 
@@ -162,6 +165,7 @@ const productSchema = z
     inStock: z.boolean().optional().default(true),
     trackInventory: z.boolean().optional().default(false),
     stockQuantity: z.number().int().min(0).max(1_000_000_000).optional().default(0),
+    isPublished: z.boolean().optional().default(false),
     isFeatured: z.boolean().optional().default(false),
     aliexpressUrl: webUrlSchema.nullable().optional().default(null),
     categoryId: idSchema.nullable().optional().default(null),
@@ -171,12 +175,29 @@ const productSchema = z
   .superRefine((product, context) => {
     const combinations = new Set<string>();
     const skus = new Set<string>();
+    const supplierSkuIds = new Set<string>();
 
     if (product.variants.length > 0 && product.trackInventory) {
       context.addIssue({
         code: "custom",
         message: "Track inventory on each variant when variants are present",
         path: ["trackInventory"],
+      });
+    }
+
+    if (product.aliexpressUrl && !parseAliExpressProductUrl(product.aliexpressUrl)) {
+      context.addIssue({
+        code: "custom",
+        message: "Use an HTTPS AliExpress item URL",
+        path: ["aliexpressUrl"],
+      });
+    }
+
+    if (!product.aliexpressUrl && product.variants.some((variant) => variant.aliexpressSkuId)) {
+      context.addIssue({
+        code: "custom",
+        message: "Add the AliExpress item URL before mapping supplier variants",
+        path: ["aliexpressUrl"],
       });
     }
 
@@ -206,6 +227,16 @@ const productSchema = z
         }
         skus.add(normalizedSku);
       }
+      if (variant.aliexpressSkuId) {
+        if (supplierSkuIds.has(variant.aliexpressSkuId)) {
+          context.addIssue({
+            code: "custom",
+            message: "AliExpress SKU IDs must be unique within a product",
+            path: ["variants", index, "aliexpressSkuId"],
+          });
+        }
+        supplierSkuIds.add(variant.aliexpressSkuId);
+      }
     });
   });
 
@@ -232,6 +263,31 @@ const updateOrderStatusSchema = z
     reason: z.string().trim().min(3).max(500).optional(),
   })
   .strict();
+
+const fulfillmentText = (limit: number) =>
+  z.string().trim().max(limit).transform((value) => value || null);
+
+const updateFulfillmentSchema = z.object({
+  orderItemId: idSchema,
+  supplierOrderRef: fulfillmentText(120),
+  carrier: fulfillmentText(120),
+  trackingNumber: fulfillmentText(120),
+  trackingUrl: z.string().trim().max(2_048).refine((value) => {
+    if (!value) return true;
+    try {
+      return new URL(value).protocol === "https:";
+    } catch {
+      return false;
+    }
+  }, "Tracking URL must use HTTPS").transform((value) => value || null),
+}).strict().superRefine((input, context) => {
+  if (input.trackingNumber && !input.carrier) {
+    context.addIssue({ code: "custom", path: ["carrier"], message: "Carrier is required with a tracking number" });
+  }
+  if (input.trackingUrl && !input.trackingNumber) {
+    context.addIssue({ code: "custom", path: ["trackingNumber"], message: "Tracking number is required with a tracking URL" });
+  }
+});
 
 const moderateReviewSchema = z.object({ reviewId: idSchema }).strict();
 
@@ -394,6 +450,18 @@ function validationError(
   return {
     ok: false,
     error: error.issues[0]?.message ?? fallback,
+  };
+}
+
+function productValidationError(error: z.ZodError) {
+  const field = error.issues[0]?.path.join(".") ?? "";
+  return {
+    ok: false as const,
+    error: field.includes("aliexpressSkuId")
+      ? "adminInvalidSupplierVariant"
+      : field.includes("aliexpressUrl")
+        ? "adminInvalidAliExpressUrl"
+        : "adminInvalidProduct",
   };
 }
 
@@ -639,10 +707,14 @@ export async function createProductAction(
 ): Promise<ActionResult<{ id: string; slug: string }>> {
   await requireAdmin();
   const parsed = productSchema.safeParse(input);
-  if (!parsed.success) return { ok: false, error: "adminInvalidProduct" };
+  if (!parsed.success) return productValidationError(parsed.error);
 
   const { variants, ...data } = parsed.data;
+  if (data.isPublished && data.aliexpressUrl && variants.some((variant) => !variant.aliexpressSkuId)) {
+    return { ok: false, error: "adminInvalidSupplierVariant" };
+  }
   try {
+    const source = data.aliexpressUrl ? parseAliExpressProductUrl(data.aliexpressUrl) : null;
     const normalizedVariants = variants.map((variant) => ({
       ...variant,
       sku: variant.sku?.toUpperCase() ?? null,
@@ -651,6 +723,8 @@ export async function createProductAction(
     const product = await prisma.product.create({
       data: {
         ...data,
+        aliexpressUrl: source?.url ?? null,
+        aliexpressProductId: source?.productId ?? null,
         sku: data.sku?.toUpperCase() ?? null,
         inStock: data.trackInventory ? data.stockQuantity > 0 : data.inStock,
         variants: { create: normalizedVariants },
@@ -669,14 +743,15 @@ export async function updateProductAction(
 ): Promise<ActionResult<{ id: string; slug: string }>> {
   await requireAdmin();
   const parsed = updateProductSchema.safeParse(input);
-  if (!parsed.success) return { ok: false, error: "adminInvalidProduct" };
+  if (!parsed.success) return productValidationError(parsed.error);
 
   const { id, variants, ...data } = parsed.data;
   try {
+    const source = data.aliexpressUrl ? parseAliExpressProductUrl(data.aliexpressUrl) : null;
     const result = await prisma.$transaction(async (transaction) => {
       const existingProduct = await transaction.product.findUnique({
         where: { id },
-        select: { reservedQuantity: true },
+        select: { reservedQuantity: true, isPublished: true, aliexpressUrl: true },
       });
       if (!existingProduct) return { ok: false as const, error: "adminRecordNotFound" };
       if (data.stockQuantity < existingProduct.reservedQuantity) {
@@ -684,8 +759,16 @@ export async function updateProductAction(
       }
       const existingVariants = await transaction.variant.findMany({
         where: { productId: id },
-        select: { id: true, reservedQuantity: true },
+        select: { id: true, reservedQuantity: true, aliexpressSkuId: true },
       });
+      const sourceChanged = !existingProduct.isPublished ||
+        parseAliExpressProductUrl(existingProduct.aliexpressUrl ?? "")?.url !== source?.url;
+      if (data.isPublished && data.aliexpressUrl && (
+        (sourceChanged && variants.some((variant) => !variant.aliexpressSkuId)) ||
+        variants.some((variant) => !variant.id && !variant.aliexpressSkuId)
+      )) {
+        return { ok: false as const, error: "adminInvalidSupplierVariant" };
+      }
       const existingVariantIds = new Set(existingVariants.map((variant) => variant.id));
       const submittedVariantIds = variants.flatMap((variant) =>
         variant.id ? [variant.id] : [],
@@ -723,6 +806,8 @@ export async function updateProductAction(
         where: { id },
         data: {
           ...data,
+          aliexpressUrl: source?.url ?? null,
+          aliexpressProductId: source?.productId ?? null,
           sku: data.sku?.toUpperCase() ?? null,
           inStock: data.trackInventory ? data.stockQuantity > 0 : data.inStock,
         },
@@ -869,6 +954,7 @@ export async function updateOrderStatusAction(
         paymentRef: true,
         currency: true,
         total: true,
+        items: { select: { supplierUrl: true, supplierOrderRef: true } },
       },
     });
     if (!order) return { ok: false, error: "Order not found" };
@@ -882,6 +968,11 @@ export async function updateOrderStatusAction(
           ok: false,
           error: `Orders cannot move from ${order.status} to ${parsed.data.status}`,
         };
+      }
+
+      if (parsed.data.status === "FULFILLED" &&
+        order.items.some((item) => item.supplierUrl && !item.supplierOrderRef)) {
+        return { ok: false, error: "Record the supplier order reference for every sourced item first" };
       }
 
       if (parsed.data.status === "REFUNDED") {
@@ -918,6 +1009,16 @@ export async function updateOrderStatusAction(
         });
       } else {
         const updated = await prisma.$transaction(async (transaction) => {
+          if (parsed.data.status === "FULFILLED") {
+            const missingSupplierOrders = await transaction.orderItem.count({
+              where: {
+                orderId: order.id,
+                supplierUrl: { not: null },
+                supplierOrderRef: null,
+              },
+            });
+            if (missingSupplierOrders > 0) return false;
+          }
           const transition = await transaction.order.updateMany({
             where: { id: order.id, status: order.status },
             data: { status: parsed.data.status },
@@ -948,6 +1049,68 @@ export async function updateOrderStatusAction(
     };
   } catch (error) {
     return mutationError(error, "Could not update order status");
+  }
+}
+
+export async function updateOrderItemFulfillmentAction(
+  input: z.input<typeof updateFulfillmentSchema>,
+): Promise<ActionResult<{
+  id: string;
+  supplierOrderRef: string | null;
+  carrier: string | null;
+  trackingNumber: string | null;
+  trackingUrl: string | null;
+}>> {
+  const admin = await requireAdmin();
+  const parsed = updateFulfillmentSchema.safeParse(input);
+  if (!parsed.success) return validationError(parsed.error, "Invalid fulfillment details");
+
+  try {
+    const result = await prisma.$transaction(async (transaction) => {
+      const existing = await transaction.orderItem.findUnique({
+        where: { id: parsed.data.orderItemId },
+        select: { id: true, orderId: true, supplierUrl: true, shippedAt: true, order: { select: { status: true } } },
+      });
+      if (!existing || !["PAID", "FULFILLED", "DELIVERED"].includes(existing.order.status)) {
+        return { ok: false as const, error: "Paid order item not found" };
+      }
+      if (["FULFILLED", "DELIVERED"].includes(existing.order.status) &&
+        existing.supplierUrl && !parsed.data.supplierOrderRef) {
+        return { ok: false as const, error: "Keep the supplier order reference on fulfilled items" };
+      }
+      const updated = await transaction.orderItem.update({
+        where: { id: existing.id },
+        data: {
+          supplierOrderRef: parsed.data.supplierOrderRef,
+          carrier: parsed.data.carrier,
+          trackingNumber: parsed.data.trackingNumber,
+          trackingUrl: parsed.data.trackingUrl,
+          shippedAt: parsed.data.trackingNumber ? existing.shippedAt ?? new Date() : null,
+        },
+        select: {
+          id: true,
+          supplierOrderRef: true,
+          carrier: true,
+          trackingNumber: true,
+          trackingUrl: true,
+        },
+      });
+      await transaction.adminAuditLog.create({
+        data: {
+          adminUserId: admin.user.id,
+          action: "ORDER_ITEM_FULFILLMENT_UPDATED",
+          targetType: "OrderItem",
+          targetId: existing.id,
+          metadata: { orderId: existing.orderId },
+        },
+      });
+      return { ok: true as const, data: updated };
+    });
+    if (!result.ok) return result;
+    revalidateAdminAndAccounts();
+    return result;
+  } catch (error) {
+    return mutationError(error, "Could not update fulfillment details");
   }
 }
 

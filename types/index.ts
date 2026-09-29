@@ -10,9 +10,7 @@ export type CurrencyRates = Record<CurrencyCode, number>;
 export type PaymentMethodCode =
   | "STRIPE"
   | "MOYASAR"
-  | "PAYPAL"
-  | "PADDLE"
-  | "LEMONSQUEEZY";
+  | "PAYPAL";
 
 export type OrderStatusCode =
   | "PENDING"
@@ -156,11 +154,13 @@ export type VariantData = {
   titleAr: string;
   options: VariantOptions;
   priceUsd: number | null;
+  costUsd: number | null;
   sku: string | null;
   inStock: boolean;
   trackInventory: boolean;
   stockQuantity: number;
   reservedQuantity: number;
+  aliexpressSkuId: string | null;
 };
 
 export type ReviewData = {
@@ -194,8 +194,10 @@ export type ProductData = {
   trackInventory: boolean;
   stockQuantity: number;
   reservedQuantity: number;
+  isPublished: boolean;
   isFeatured: boolean;
   aliexpressUrl: string | null;
+  aliexpressProductId: string | null;
   categoryId: string | null;
   category: CategoryData | null;
   variants: VariantData[];
@@ -336,6 +338,9 @@ export type AccountOrderData = {
     image: string | null;
     quantity: number;
     unitPrice: number;
+    carrier: string | null;
+    trackingNumber: string | null;
+    trackingUrl: string | null;
   }>;
 };
 
@@ -379,10 +384,12 @@ export type VariantDraft = {
   titleAr: string;
   options: VariantOptions;
   priceUsd: string;
+  costUsd: string;
   sku: string;
   inStock: boolean;
   trackInventory: boolean;
   stockQuantity: string;
+  aliexpressSkuId: string;
 };
 
 export type FieldProps = {

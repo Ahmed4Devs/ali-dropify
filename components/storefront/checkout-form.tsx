@@ -16,6 +16,7 @@ import { convertFromUsd, formatUsdPrice } from "@/lib/currency";
 import { useStore } from "@/components/storefront/store-provider";
 import type { CheckoutFormProps, PaymentMethodCode, ShippingAddress } from "@/types";
 import { track } from "@/lib/analytics";
+import { isSupportedShippingCountry, SAUDI_SHIPPING_COUNTRY } from "@/lib/shipping-destination";
 
 const checkoutAttemptSchema = z.object({
   checkoutKey: z.uuid(),
@@ -26,7 +27,7 @@ const checkoutAttemptSchema = z.object({
 const blankAddress: ShippingAddress = {
   fullName: "",
   phone: "",
-  country: "",
+  country: SAUDI_SHIPPING_COUNTRY,
   state: "",
   city: "",
   street: "",
@@ -40,19 +41,11 @@ export function CheckoutForm({ locale, settings, initialEmail, savedAddresses }:
   const { cart, currency, rates } = useStore();
   const [pending, startTransition] = useTransition();
   const [email, setEmail] = useState(initialEmail);
-  const [address, setAddress] = useState<ShippingAddress>(savedAddresses.find((entry) => entry.isDefault) ?? blankAddress);
-  const paddleEnabled = process.env.NEXT_PUBLIC_PADDLE_ENABLED === "true";
-  const lemonSqueezyEnabled = process.env.NEXT_PUBLIC_LEMONSQUEEZY_ENABLED === "true";
+  const supportedAddresses = savedAddresses.filter((entry) => isSupportedShippingCountry(entry.country));
+  const [address, setAddress] = useState<ShippingAddress>(supportedAddresses.find((entry) => entry.isDefault) ?? supportedAddresses[0] ?? blankAddress);
   const availableMethods: PaymentMethodCode[] = currency === "SAR"
     ? ["STRIPE", "MOYASAR"]
-    : currency === "AUD"
-      ? ["STRIPE", "PAYPAL", ...(paddleEnabled ? ["PADDLE" as const] : [])]
-      : [
-          "STRIPE",
-          "PAYPAL",
-          ...(paddleEnabled ? ["PADDLE" as const] : []),
-          ...(lemonSqueezyEnabled ? ["LEMONSQUEEZY" as const] : []),
-        ];
+    : ["STRIPE", "PAYPAL"];
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethodCode>("STRIPE");
   const attemptRef = useRef<{ checkoutKey: string; receiptToken: string; cartSignature: string } | null>(null);
   const threshold = settings.freeShippingMinUsd;
@@ -114,7 +107,7 @@ export function CheckoutForm({ locale, settings, initialEmail, savedAddresses }:
         email,
         phone: address.phone ?? "",
         fullName: address.fullName,
-        country: address.country,
+        country: SAUDI_SHIPPING_COUNTRY,
         state: address.state,
         city: address.city,
         street: address.street,
@@ -151,10 +144,10 @@ export function CheckoutForm({ locale, settings, initialEmail, savedAddresses }:
 
         <section className="rounded-xl border bg-card p-5 sm:p-7">
           <h2 className="text-xl font-bold">{t("shippingAddress.title")}</h2>
-          {savedAddresses.length > 0 && <div className="mt-5 space-y-2"><Label htmlFor="saved-address">{labels.saved}</Label><select id="saved-address" className="h-11 w-full rounded-lg border bg-background px-3 text-sm" onChange={(event) => { const selected = savedAddresses.find((entry) => entry.id === event.target.value); if (selected) setAddress(selected); }}><option value="">—</option>{savedAddresses.map((entry) => <option key={entry.id} value={entry.id}>{entry.fullName} · {entry.city}</option>)}</select></div>}
+          {supportedAddresses.length > 0 && <div className="mt-5 space-y-2"><Label htmlFor="saved-address">{labels.saved}</Label><select id="saved-address" className="h-11 w-full rounded-lg border bg-background px-3 text-sm" onChange={(event) => { const selected = supportedAddresses.find((entry) => entry.id === event.target.value); if (selected) setAddress({ ...selected, country: SAUDI_SHIPPING_COUNTRY }); }}><option value="">—</option>{supportedAddresses.map((entry) => <option key={entry.id} value={entry.id}>{entry.fullName} · {entry.city}</option>)}</select></div>}
           <div className="mt-5 grid gap-4 sm:grid-cols-2">
             <div className="space-y-2 sm:col-span-2"><Label htmlFor="full-name">{labels.fullName}</Label><Input id="full-name" autoComplete="name" required value={address.fullName} onChange={(event) => setField("fullName", event.target.value)} /></div>
-            <div className="space-y-2"><Label htmlFor="country">{labels.country}</Label><Input id="country" autoComplete="country-name" required value={address.country} onChange={(event) => setField("country", event.target.value)} /></div>
+            <div className="space-y-2"><Label htmlFor="country">{labels.country}</Label><Input id="country" autoComplete="country-name" required readOnly value={locale === "ar" ? "المملكة العربية السعودية" : SAUDI_SHIPPING_COUNTRY} /><p className="text-xs text-muted-foreground">{t("shippingAddress.saudiOnly")}</p></div>
             <div className="space-y-2"><Label htmlFor="state">{labels.state}</Label><Input id="state" autoComplete="address-level1" required value={address.state} onChange={(event) => setField("state", event.target.value)} /></div>
             <div className="space-y-2"><Label htmlFor="city">{labels.city}</Label><Input id="city" autoComplete="address-level2" required value={address.city} onChange={(event) => setField("city", event.target.value)} /></div>
             <div className="space-y-2"><Label htmlFor="zip">{labels.zip}</Label><Input id="zip" autoComplete="postal-code" required value={address.zip} onChange={(event) => setField("zip", event.target.value)} /></div>
@@ -170,7 +163,7 @@ export function CheckoutForm({ locale, settings, initialEmail, savedAddresses }:
               <label key={method} className={`flex items-center gap-4 rounded-xl border p-4 transition ${paymentMethod === method ? "border-primary bg-accent/60" : "hover:border-foreground/30"}`}>
                 <RadioGroupItem value={method} />
                 <span className="grid size-10 place-items-center rounded-lg bg-muted"><CreditCard className="size-5" /></span>
-                <span className="font-semibold">{t(`payment.${method === "LEMONSQUEEZY" ? "lemonSqueezy" : method.toLowerCase()}`)}</span>
+                <span className="font-semibold">{t(`payment.${method.toLowerCase()}`)}</span>
               </label>
             ))}
           </RadioGroup>

@@ -197,8 +197,10 @@ export const ProductScalarFieldEnum = {
   trackInventory: 'trackInventory',
   stockQuantity: 'stockQuantity',
   reservedQuantity: 'reservedQuantity',
+  isPublished: 'isPublished',
   isFeatured: 'isFeatured',
   aliexpressUrl: 'aliexpressUrl',
+  aliexpressProductId: 'aliexpressProductId',
   categoryId: 'categoryId',
   viewsTotal: 'viewsTotal',
   salesCount: 'salesCount',
@@ -216,11 +218,13 @@ export const VariantScalarFieldEnum = {
   titleAr: 'titleAr',
   options: 'options',
   priceUsd: 'priceUsd',
+  costUsd: 'costUsd',
   sku: 'sku',
   inStock: 'inStock',
   trackInventory: 'trackInventory',
   stockQuantity: 'stockQuantity',
-  reservedQuantity: 'reservedQuantity'
+  reservedQuantity: 'reservedQuantity',
+  aliexpressSkuId: 'aliexpressSkuId'
 } as const
 
 export type VariantScalarFieldEnum = (typeof VariantScalarFieldEnum)[keyof typeof VariantScalarFieldEnum]
@@ -339,6 +343,14 @@ export const OrderItemScalarFieldEnum = {
   variant: 'variant',
   unitPrice: 'unitPrice',
   unitCostUsd: 'unitCostUsd',
+  supplierUrl: 'supplierUrl',
+  supplierProductId: 'supplierProductId',
+  supplierSkuId: 'supplierSkuId',
+  supplierOrderRef: 'supplierOrderRef',
+  carrier: 'carrier',
+  trackingNumber: 'trackingNumber',
+  trackingUrl: 'trackingUrl',
+  shippedAt: 'shippedAt',
   quantity: 'quantity',
   inventoryReserved: 'inventoryReserved'
 } as const

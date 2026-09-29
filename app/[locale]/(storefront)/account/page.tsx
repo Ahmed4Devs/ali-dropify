@@ -25,6 +25,9 @@ export default async function AccountPage({ params }: PageProps<"/[locale]/accou
       image: item.image,
       quantity: item.quantity,
       unitPrice: item.unitPrice,
+      carrier: item.carrier,
+      trackingNumber: item.trackingNumber,
+      trackingUrl: item.trackingUrl,
     })),
   }));
   return <AccountDashboard locale={locale} user={{ id: session.user.id, email: session.user.email, firstName: session.user.firstName ?? null, lastName: session.user.lastName ?? null, phone: session.user.phone ?? null, image: session.user.image ?? null }} addresses={addresses as SavedAddressData[]} orders={serializableOrders} />;

@@ -17,6 +17,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { formatMoney } from "@/lib/currency";
+import { SAUDI_SHIPPING_COUNTRY } from "@/lib/shipping-destination";
 import type { AccountDashboardProps, AddressInput, CurrencyCode, SavedAddressData } from "@/types";
 
 export function AccountDashboard({ locale, user, addresses, orders }: AccountDashboardProps) {
@@ -30,7 +31,7 @@ export function AccountDashboard({ locale, user, addresses, orders }: AccountDas
   const [pending, startTransition] = useTransition();
   const [profile, setProfile] = useState({ firstName: user.firstName ?? "", lastName: user.lastName ?? "", phone: user.phone ?? "" });
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [address, setAddress] = useState<AddressInput>({ locale, fullName: "", phone: "", country: "", state: "", city: "", street: "", apartment: "", zip: "", isDefault: addresses.length === 0 });
+  const [address, setAddress] = useState<AddressInput>({ locale, fullName: "", phone: "", country: SAUDI_SHIPPING_COUNTRY, state: "", city: "", street: "", apartment: "", zip: "", isDefault: addresses.length === 0 });
 
   const addressLabels = {
     fullName: checkout("shippingAddress.fullName"),
@@ -54,12 +55,10 @@ export function AccountDashboard({ locale, user, addresses, orders }: AccountDas
     STRIPE: status("payment.stripe"),
     MOYASAR: status("payment.moyasar"),
     PAYPAL: status("payment.paypal"),
-    PADDLE: status("payment.paddle"),
-    LEMONSQUEEZY: status("payment.lemonSqueezy"),
   };
 
   function resetAddress() {
-    setAddress({ locale, fullName: "", phone: "", country: "", state: "", city: "", street: "", apartment: "", zip: "", isDefault: addresses.length === 0 });
+    setAddress({ locale, fullName: "", phone: "", country: SAUDI_SHIPPING_COUNTRY, state: "", city: "", street: "", apartment: "", zip: "", isDefault: addresses.length === 0 });
   }
 
   function openNewAddress() {
@@ -68,7 +67,7 @@ export function AccountDashboard({ locale, user, addresses, orders }: AccountDas
   }
 
   function openAddress(entry: SavedAddressData) {
-    setAddress({ ...entry, locale });
+    setAddress({ ...entry, country: SAUDI_SHIPPING_COUNTRY, locale });
     setDialogOpen(true);
   }
 
@@ -178,7 +177,7 @@ export function AccountDashboard({ locale, user, addresses, orders }: AccountDas
                 {(["fullName", "phone", "country", "state", "city", "street", "apartment", "zip"] as const).map((field) => (
                   <div key={field} className={`space-y-1.5 ${field === "street" || field === "apartment" ? "sm:col-span-2" : ""}`}>
                     <Label htmlFor={`address-${field}`}>{addressLabels[field]}</Label>
-                    <Input id={`address-${field}`} required={field !== "phone" && field !== "apartment"} value={address[field] ?? ""} onChange={(event) => setAddress((current) => ({ ...current, [field]: event.target.value }))} />
+                    <Input id={`address-${field}`} required={field !== "phone" && field !== "apartment"} readOnly={field === "country"} value={field === "country" ? locale === "ar" ? "المملكة العربية السعودية" : SAUDI_SHIPPING_COUNTRY : address[field] ?? ""} onChange={(event) => setAddress((current) => ({ ...current, [field]: event.target.value }))} />
                   </div>
                 ))}
                 <label className="mt-2 flex items-center gap-2 text-sm sm:col-span-2"><input type="checkbox" checked={address.isDefault} onChange={(event) => setAddress((current) => ({ ...current, isDefault: event.target.checked }))} />{t("addresses.setDefault")}</label>
@@ -219,7 +218,7 @@ export function AccountDashboard({ locale, user, addresses, orders }: AccountDas
                     <ChevronDown className="size-4 transition group-open:rotate-180" />
                   </summary>
                   <div className="border-t p-4 sm:p-5">
-                    {order.items.map((item) => <div key={item.id} className="flex items-center gap-3 py-2">{item.image && <div className="relative size-12 overflow-hidden rounded-lg"><Image src={item.image} alt="" fill sizes="48px" className="object-cover" /></div>}<p className="flex-1 text-sm font-semibold">{locale === "ar" ? item.titleAr ?? item.titleEn : item.titleEn} × {item.quantity}</p><p className="text-sm">{formatMoney(item.unitPrice * item.quantity, order.currency as CurrencyCode, locale)}</p></div>)}
+                    {order.items.map((item) => <div key={item.id} className="py-2"><div className="flex items-center gap-3">{item.image && <div className="relative size-12 overflow-hidden rounded-lg"><Image src={item.image} alt="" fill sizes="48px" className="object-cover" /></div>}<p className="flex-1 text-sm font-semibold">{locale === "ar" ? item.titleAr ?? item.titleEn : item.titleEn} × {item.quantity}</p><p className="text-sm">{formatMoney(item.unitPrice * item.quantity, order.currency as CurrencyCode, locale)}</p></div>{item.trackingNumber && <p className="mt-2 text-xs text-muted-foreground">{t("orders.tracking")}: {item.carrier ? `${item.carrier} · ` : ""}{item.trackingUrl ? <a href={item.trackingUrl} target="_blank" rel="noreferrer" className="text-primary underline">{item.trackingNumber}</a> : item.trackingNumber}</p>}</div>)}
                     <div className="mt-4 grid gap-4 border-t pt-4 text-sm sm:grid-cols-2">
                       <div><p className="font-semibold">{t("orders.paymentMethod")}</p><p className="mt-1 text-muted-foreground">{order.paymentMethod ? paymentMethods[order.paymentMethod] : common("none")}</p></div>
                       <div><p className="font-semibold">{t("orders.shippingAddress")}</p><p className="mt-1 leading-6 text-muted-foreground">{order.shippingAddress.fullName}<br />{order.shippingAddress.street}{order.shippingAddress.apartment ? `, ${order.shippingAddress.apartment}` : ""}<br />{order.shippingAddress.city}, {order.shippingAddress.state} {order.shippingAddress.zip}<br />{order.shippingAddress.country}</p></div>

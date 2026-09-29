@@ -709,6 +709,7 @@ async function seedCatalog() {
     const hasVariants = variantSeeds.some((variant) => variant.productId === product.id);
     const inventoryProduct = {
       ...product,
+      isPublished: true,
       sku: `SEED-${product.slug.toUpperCase()}`,
       trackInventory: !hasVariants,
       stockQuantity: hasVariants ? 0 : product.inStock ? 50 : 0,

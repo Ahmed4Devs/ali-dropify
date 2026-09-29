@@ -5,6 +5,7 @@ import {
   inspectProviderRefund,
   refundProviderPayment,
   type ProviderOrder,
+  isSupportedPaymentMethod,
 } from "@/lib/payments/provider-operations";
 
 export type RefundResult =
@@ -77,7 +78,7 @@ export async function refundOrder(input: {
   if (!order || !["PAID", "FULFILLED", "DELIVERED"].includes(order.status)) {
     return { ok: false, error: "Only paid orders can be refunded" };
   }
-  if (!order.paymentMethod || !order.paymentRef) {
+  if (!isSupportedPaymentMethod(order.paymentMethod) || !order.paymentRef) {
     return { ok: false, error: "The order has no verified payment reference" };
   }
   if (order.refund?.status === "SUCCEEDED") return { ok: true, state: "succeeded" };
@@ -208,6 +209,7 @@ export async function reconcilePendingRefunds(limit = 50) {
   const results = [];
   for (const refund of refunds) {
     if (!refund.providerRef) continue;
+    if (!isSupportedPaymentMethod(refund.provider)) continue;
     const inspected = await inspectProviderRefund({
       orderId: refund.orderId,
       provider: refund.provider,

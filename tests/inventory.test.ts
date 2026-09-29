@@ -57,3 +57,8 @@ test("a disabled product cannot be made available by its variant", () => {
   const variant = { ...line().product, id: "variant-1", inStock: true };
   assert.equal(availableInventory(line({ product, variant })), 0);
 });
+
+test("a draft product cannot be purchased even when inventory is available", () => {
+  const product = { ...line().product, isPublished: false };
+  assert.equal(availableInventory(line({ product })), 0);
+});

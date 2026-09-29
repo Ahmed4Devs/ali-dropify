@@ -61,8 +61,10 @@ export type ProductMinAggregateOutputType = {
   trackInventory: boolean | null
   stockQuantity: number | null
   reservedQuantity: number | null
+  isPublished: boolean | null
   isFeatured: boolean | null
   aliexpressUrl: string | null
+  aliexpressProductId: string | null
   categoryId: string | null
   viewsTotal: number | null
   salesCount: number | null
@@ -85,8 +87,10 @@ export type ProductMaxAggregateOutputType = {
   trackInventory: boolean | null
   stockQuantity: number | null
   reservedQuantity: number | null
+  isPublished: boolean | null
   isFeatured: boolean | null
   aliexpressUrl: string | null
+  aliexpressProductId: string | null
   categoryId: string | null
   viewsTotal: number | null
   salesCount: number | null
@@ -111,8 +115,10 @@ export type ProductCountAggregateOutputType = {
   trackInventory: number
   stockQuantity: number
   reservedQuantity: number
+  isPublished: number
   isFeatured: number
   aliexpressUrl: number
+  aliexpressProductId: number
   categoryId: number
   viewsTotal: number
   salesCount: number
@@ -157,8 +163,10 @@ export type ProductMinAggregateInputType = {
   trackInventory?: true
   stockQuantity?: true
   reservedQuantity?: true
+  isPublished?: true
   isFeatured?: true
   aliexpressUrl?: true
+  aliexpressProductId?: true
   categoryId?: true
   viewsTotal?: true
   salesCount?: true
@@ -181,8 +189,10 @@ export type ProductMaxAggregateInputType = {
   trackInventory?: true
   stockQuantity?: true
   reservedQuantity?: true
+  isPublished?: true
   isFeatured?: true
   aliexpressUrl?: true
+  aliexpressProductId?: true
   categoryId?: true
   viewsTotal?: true
   salesCount?: true
@@ -207,8 +217,10 @@ export type ProductCountAggregateInputType = {
   trackInventory?: true
   stockQuantity?: true
   reservedQuantity?: true
+  isPublished?: true
   isFeatured?: true
   aliexpressUrl?: true
+  aliexpressProductId?: true
   categoryId?: true
   viewsTotal?: true
   salesCount?: true
@@ -320,8 +332,10 @@ export type ProductGroupByOutputType = {
   trackInventory: boolean
   stockQuantity: number
   reservedQuantity: number
+  isPublished: boolean
   isFeatured: boolean
   aliexpressUrl: string | null
+  aliexpressProductId: string | null
   categoryId: string | null
   viewsTotal: number
   salesCount: number
@@ -369,8 +383,10 @@ export type ProductWhereInput = {
   trackInventory?: Prisma.BoolFilter<"Product"> | boolean
   stockQuantity?: Prisma.IntFilter<"Product"> | number
   reservedQuantity?: Prisma.IntFilter<"Product"> | number
+  isPublished?: Prisma.BoolFilter<"Product"> | boolean
   isFeatured?: Prisma.BoolFilter<"Product"> | boolean
   aliexpressUrl?: Prisma.StringNullableFilter<"Product"> | string | null
+  aliexpressProductId?: Prisma.StringNullableFilter<"Product"> | string | null
   categoryId?: Prisma.StringNullableFilter<"Product"> | string | null
   viewsTotal?: Prisma.IntFilter<"Product"> | number
   salesCount?: Prisma.IntFilter<"Product"> | number
@@ -401,8 +417,10 @@ export type ProductOrderByWithRelationInput = {
   trackInventory?: Prisma.SortOrder
   stockQuantity?: Prisma.SortOrder
   reservedQuantity?: Prisma.SortOrder
+  isPublished?: Prisma.SortOrder
   isFeatured?: Prisma.SortOrder
   aliexpressUrl?: Prisma.SortOrderInput | Prisma.SortOrder
+  aliexpressProductId?: Prisma.SortOrderInput | Prisma.SortOrder
   categoryId?: Prisma.SortOrderInput | Prisma.SortOrder
   viewsTotal?: Prisma.SortOrder
   salesCount?: Prisma.SortOrder
@@ -436,8 +454,10 @@ export type ProductWhereUniqueInput = Prisma.AtLeast<{
   trackInventory?: Prisma.BoolFilter<"Product"> | boolean
   stockQuantity?: Prisma.IntFilter<"Product"> | number
   reservedQuantity?: Prisma.IntFilter<"Product"> | number
+  isPublished?: Prisma.BoolFilter<"Product"> | boolean
   isFeatured?: Prisma.BoolFilter<"Product"> | boolean
   aliexpressUrl?: Prisma.StringNullableFilter<"Product"> | string | null
+  aliexpressProductId?: Prisma.StringNullableFilter<"Product"> | string | null
   categoryId?: Prisma.StringNullableFilter<"Product"> | string | null
   viewsTotal?: Prisma.IntFilter<"Product"> | number
   salesCount?: Prisma.IntFilter<"Product"> | number
@@ -468,8 +488,10 @@ export type ProductOrderByWithAggregationInput = {
   trackInventory?: Prisma.SortOrder
   stockQuantity?: Prisma.SortOrder
   reservedQuantity?: Prisma.SortOrder
+  isPublished?: Prisma.SortOrder
   isFeatured?: Prisma.SortOrder
   aliexpressUrl?: Prisma.SortOrderInput | Prisma.SortOrder
+  aliexpressProductId?: Prisma.SortOrderInput | Prisma.SortOrder
   categoryId?: Prisma.SortOrderInput | Prisma.SortOrder
   viewsTotal?: Prisma.SortOrder
   salesCount?: Prisma.SortOrder
@@ -502,8 +524,10 @@ export type ProductScalarWhereWithAggregatesInput = {
   trackInventory?: Prisma.BoolWithAggregatesFilter<"Product"> | boolean
   stockQuantity?: Prisma.IntWithAggregatesFilter<"Product"> | number
   reservedQuantity?: Prisma.IntWithAggregatesFilter<"Product"> | number
+  isPublished?: Prisma.BoolWithAggregatesFilter<"Product"> | boolean
   isFeatured?: Prisma.BoolWithAggregatesFilter<"Product"> | boolean
   aliexpressUrl?: Prisma.StringNullableWithAggregatesFilter<"Product"> | string | null
+  aliexpressProductId?: Prisma.StringNullableWithAggregatesFilter<"Product"> | string | null
   categoryId?: Prisma.StringNullableWithAggregatesFilter<"Product"> | string | null
   viewsTotal?: Prisma.IntWithAggregatesFilter<"Product"> | number
   salesCount?: Prisma.IntWithAggregatesFilter<"Product"> | number
@@ -528,8 +552,10 @@ export type ProductCreateInput = {
   trackInventory?: boolean
   stockQuantity?: number
   reservedQuantity?: number
+  isPublished?: boolean
   isFeatured?: boolean
   aliexpressUrl?: string | null
+  aliexpressProductId?: string | null
   viewsTotal?: number
   salesCount?: number
   createdAt?: Date | string
@@ -559,8 +585,10 @@ export type ProductUncheckedCreateInput = {
   trackInventory?: boolean
   stockQuantity?: number
   reservedQuantity?: number
+  isPublished?: boolean
   isFeatured?: boolean
   aliexpressUrl?: string | null
+  aliexpressProductId?: string | null
   categoryId?: string | null
   viewsTotal?: number
   salesCount?: number
@@ -590,8 +618,10 @@ export type ProductUpdateInput = {
   trackInventory?: Prisma.BoolFieldUpdateOperationsInput | boolean
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   reservedQuantity?: Prisma.IntFieldUpdateOperationsInput | number
+  isPublished?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   aliexpressUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  aliexpressProductId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   viewsTotal?: Prisma.IntFieldUpdateOperationsInput | number
   salesCount?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -621,8 +651,10 @@ export type ProductUncheckedUpdateInput = {
   trackInventory?: Prisma.BoolFieldUpdateOperationsInput | boolean
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   reservedQuantity?: Prisma.IntFieldUpdateOperationsInput | number
+  isPublished?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   aliexpressUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  aliexpressProductId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   categoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   viewsTotal?: Prisma.IntFieldUpdateOperationsInput | number
   salesCount?: Prisma.IntFieldUpdateOperationsInput | number
@@ -652,8 +684,10 @@ export type ProductCreateManyInput = {
   trackInventory?: boolean
   stockQuantity?: number
   reservedQuantity?: number
+  isPublished?: boolean
   isFeatured?: boolean
   aliexpressUrl?: string | null
+  aliexpressProductId?: string | null
   categoryId?: string | null
   viewsTotal?: number
   salesCount?: number
@@ -678,8 +712,10 @@ export type ProductUpdateManyMutationInput = {
   trackInventory?: Prisma.BoolFieldUpdateOperationsInput | boolean
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   reservedQuantity?: Prisma.IntFieldUpdateOperationsInput | number
+  isPublished?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   aliexpressUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  aliexpressProductId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   viewsTotal?: Prisma.IntFieldUpdateOperationsInput | number
   salesCount?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -703,8 +739,10 @@ export type ProductUncheckedUpdateManyInput = {
   trackInventory?: Prisma.BoolFieldUpdateOperationsInput | boolean
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   reservedQuantity?: Prisma.IntFieldUpdateOperationsInput | number
+  isPublished?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   aliexpressUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  aliexpressProductId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   categoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   viewsTotal?: Prisma.IntFieldUpdateOperationsInput | number
   salesCount?: Prisma.IntFieldUpdateOperationsInput | number
@@ -747,8 +785,10 @@ export type ProductCountOrderByAggregateInput = {
   trackInventory?: Prisma.SortOrder
   stockQuantity?: Prisma.SortOrder
   reservedQuantity?: Prisma.SortOrder
+  isPublished?: Prisma.SortOrder
   isFeatured?: Prisma.SortOrder
   aliexpressUrl?: Prisma.SortOrder
+  aliexpressProductId?: Prisma.SortOrder
   categoryId?: Prisma.SortOrder
   viewsTotal?: Prisma.SortOrder
   salesCount?: Prisma.SortOrder
@@ -781,8 +821,10 @@ export type ProductMaxOrderByAggregateInput = {
   trackInventory?: Prisma.SortOrder
   stockQuantity?: Prisma.SortOrder
   reservedQuantity?: Prisma.SortOrder
+  isPublished?: Prisma.SortOrder
   isFeatured?: Prisma.SortOrder
   aliexpressUrl?: Prisma.SortOrder
+  aliexpressProductId?: Prisma.SortOrder
   categoryId?: Prisma.SortOrder
   viewsTotal?: Prisma.SortOrder
   salesCount?: Prisma.SortOrder
@@ -805,8 +847,10 @@ export type ProductMinOrderByAggregateInput = {
   trackInventory?: Prisma.SortOrder
   stockQuantity?: Prisma.SortOrder
   reservedQuantity?: Prisma.SortOrder
+  isPublished?: Prisma.SortOrder
   isFeatured?: Prisma.SortOrder
   aliexpressUrl?: Prisma.SortOrder
+  aliexpressProductId?: Prisma.SortOrder
   categoryId?: Prisma.SortOrder
   viewsTotal?: Prisma.SortOrder
   salesCount?: Prisma.SortOrder
@@ -991,8 +1035,10 @@ export type ProductCreateWithoutCategoryInput = {
   trackInventory?: boolean
   stockQuantity?: number
   reservedQuantity?: number
+  isPublished?: boolean
   isFeatured?: boolean
   aliexpressUrl?: string | null
+  aliexpressProductId?: string | null
   viewsTotal?: number
   salesCount?: number
   createdAt?: Date | string
@@ -1021,8 +1067,10 @@ export type ProductUncheckedCreateWithoutCategoryInput = {
   trackInventory?: boolean
   stockQuantity?: number
   reservedQuantity?: number
+  isPublished?: boolean
   isFeatured?: boolean
   aliexpressUrl?: string | null
+  aliexpressProductId?: string | null
   viewsTotal?: number
   salesCount?: number
   createdAt?: Date | string
@@ -1080,8 +1128,10 @@ export type ProductScalarWhereInput = {
   trackInventory?: Prisma.BoolFilter<"Product"> | boolean
   stockQuantity?: Prisma.IntFilter<"Product"> | number
   reservedQuantity?: Prisma.IntFilter<"Product"> | number
+  isPublished?: Prisma.BoolFilter<"Product"> | boolean
   isFeatured?: Prisma.BoolFilter<"Product"> | boolean
   aliexpressUrl?: Prisma.StringNullableFilter<"Product"> | string | null
+  aliexpressProductId?: Prisma.StringNullableFilter<"Product"> | string | null
   categoryId?: Prisma.StringNullableFilter<"Product"> | string | null
   viewsTotal?: Prisma.IntFilter<"Product"> | number
   salesCount?: Prisma.IntFilter<"Product"> | number
@@ -1106,8 +1156,10 @@ export type ProductCreateWithoutVariantsInput = {
   trackInventory?: boolean
   stockQuantity?: number
   reservedQuantity?: number
+  isPublished?: boolean
   isFeatured?: boolean
   aliexpressUrl?: string | null
+  aliexpressProductId?: string | null
   viewsTotal?: number
   salesCount?: number
   createdAt?: Date | string
@@ -1136,8 +1188,10 @@ export type ProductUncheckedCreateWithoutVariantsInput = {
   trackInventory?: boolean
   stockQuantity?: number
   reservedQuantity?: number
+  isPublished?: boolean
   isFeatured?: boolean
   aliexpressUrl?: string | null
+  aliexpressProductId?: string | null
   categoryId?: string | null
   viewsTotal?: number
   salesCount?: number
@@ -1182,8 +1236,10 @@ export type ProductUpdateWithoutVariantsInput = {
   trackInventory?: Prisma.BoolFieldUpdateOperationsInput | boolean
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   reservedQuantity?: Prisma.IntFieldUpdateOperationsInput | number
+  isPublished?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   aliexpressUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  aliexpressProductId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   viewsTotal?: Prisma.IntFieldUpdateOperationsInput | number
   salesCount?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1212,8 +1268,10 @@ export type ProductUncheckedUpdateWithoutVariantsInput = {
   trackInventory?: Prisma.BoolFieldUpdateOperationsInput | boolean
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   reservedQuantity?: Prisma.IntFieldUpdateOperationsInput | number
+  isPublished?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   aliexpressUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  aliexpressProductId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   categoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   viewsTotal?: Prisma.IntFieldUpdateOperationsInput | number
   salesCount?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1242,8 +1300,10 @@ export type ProductCreateWithoutCartItemsInput = {
   trackInventory?: boolean
   stockQuantity?: number
   reservedQuantity?: number
+  isPublished?: boolean
   isFeatured?: boolean
   aliexpressUrl?: string | null
+  aliexpressProductId?: string | null
   viewsTotal?: number
   salesCount?: number
   createdAt?: Date | string
@@ -1272,8 +1332,10 @@ export type ProductUncheckedCreateWithoutCartItemsInput = {
   trackInventory?: boolean
   stockQuantity?: number
   reservedQuantity?: number
+  isPublished?: boolean
   isFeatured?: boolean
   aliexpressUrl?: string | null
+  aliexpressProductId?: string | null
   categoryId?: string | null
   viewsTotal?: number
   salesCount?: number
@@ -1318,8 +1380,10 @@ export type ProductUpdateWithoutCartItemsInput = {
   trackInventory?: Prisma.BoolFieldUpdateOperationsInput | boolean
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   reservedQuantity?: Prisma.IntFieldUpdateOperationsInput | number
+  isPublished?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   aliexpressUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  aliexpressProductId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   viewsTotal?: Prisma.IntFieldUpdateOperationsInput | number
   salesCount?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1348,8 +1412,10 @@ export type ProductUncheckedUpdateWithoutCartItemsInput = {
   trackInventory?: Prisma.BoolFieldUpdateOperationsInput | boolean
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   reservedQuantity?: Prisma.IntFieldUpdateOperationsInput | number
+  isPublished?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   aliexpressUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  aliexpressProductId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   categoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   viewsTotal?: Prisma.IntFieldUpdateOperationsInput | number
   salesCount?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1378,8 +1444,10 @@ export type ProductCreateWithoutOrderItemsInput = {
   trackInventory?: boolean
   stockQuantity?: number
   reservedQuantity?: number
+  isPublished?: boolean
   isFeatured?: boolean
   aliexpressUrl?: string | null
+  aliexpressProductId?: string | null
   viewsTotal?: number
   salesCount?: number
   createdAt?: Date | string
@@ -1408,8 +1476,10 @@ export type ProductUncheckedCreateWithoutOrderItemsInput = {
   trackInventory?: boolean
   stockQuantity?: number
   reservedQuantity?: number
+  isPublished?: boolean
   isFeatured?: boolean
   aliexpressUrl?: string | null
+  aliexpressProductId?: string | null
   categoryId?: string | null
   viewsTotal?: number
   salesCount?: number
@@ -1454,8 +1524,10 @@ export type ProductUpdateWithoutOrderItemsInput = {
   trackInventory?: Prisma.BoolFieldUpdateOperationsInput | boolean
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   reservedQuantity?: Prisma.IntFieldUpdateOperationsInput | number
+  isPublished?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   aliexpressUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  aliexpressProductId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   viewsTotal?: Prisma.IntFieldUpdateOperationsInput | number
   salesCount?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1484,8 +1556,10 @@ export type ProductUncheckedUpdateWithoutOrderItemsInput = {
   trackInventory?: Prisma.BoolFieldUpdateOperationsInput | boolean
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   reservedQuantity?: Prisma.IntFieldUpdateOperationsInput | number
+  isPublished?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   aliexpressUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  aliexpressProductId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   categoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   viewsTotal?: Prisma.IntFieldUpdateOperationsInput | number
   salesCount?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1514,8 +1588,10 @@ export type ProductCreateWithoutReviewsInput = {
   trackInventory?: boolean
   stockQuantity?: number
   reservedQuantity?: number
+  isPublished?: boolean
   isFeatured?: boolean
   aliexpressUrl?: string | null
+  aliexpressProductId?: string | null
   viewsTotal?: number
   salesCount?: number
   createdAt?: Date | string
@@ -1544,8 +1620,10 @@ export type ProductUncheckedCreateWithoutReviewsInput = {
   trackInventory?: boolean
   stockQuantity?: number
   reservedQuantity?: number
+  isPublished?: boolean
   isFeatured?: boolean
   aliexpressUrl?: string | null
+  aliexpressProductId?: string | null
   categoryId?: string | null
   viewsTotal?: number
   salesCount?: number
@@ -1590,8 +1668,10 @@ export type ProductUpdateWithoutReviewsInput = {
   trackInventory?: Prisma.BoolFieldUpdateOperationsInput | boolean
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   reservedQuantity?: Prisma.IntFieldUpdateOperationsInput | number
+  isPublished?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   aliexpressUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  aliexpressProductId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   viewsTotal?: Prisma.IntFieldUpdateOperationsInput | number
   salesCount?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1620,8 +1700,10 @@ export type ProductUncheckedUpdateWithoutReviewsInput = {
   trackInventory?: Prisma.BoolFieldUpdateOperationsInput | boolean
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   reservedQuantity?: Prisma.IntFieldUpdateOperationsInput | number
+  isPublished?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   aliexpressUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  aliexpressProductId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   categoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   viewsTotal?: Prisma.IntFieldUpdateOperationsInput | number
   salesCount?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1650,8 +1732,10 @@ export type ProductCreateWithoutProductViewsInput = {
   trackInventory?: boolean
   stockQuantity?: number
   reservedQuantity?: number
+  isPublished?: boolean
   isFeatured?: boolean
   aliexpressUrl?: string | null
+  aliexpressProductId?: string | null
   viewsTotal?: number
   salesCount?: number
   createdAt?: Date | string
@@ -1680,8 +1764,10 @@ export type ProductUncheckedCreateWithoutProductViewsInput = {
   trackInventory?: boolean
   stockQuantity?: number
   reservedQuantity?: number
+  isPublished?: boolean
   isFeatured?: boolean
   aliexpressUrl?: string | null
+  aliexpressProductId?: string | null
   categoryId?: string | null
   viewsTotal?: number
   salesCount?: number
@@ -1726,8 +1812,10 @@ export type ProductUpdateWithoutProductViewsInput = {
   trackInventory?: Prisma.BoolFieldUpdateOperationsInput | boolean
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   reservedQuantity?: Prisma.IntFieldUpdateOperationsInput | number
+  isPublished?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   aliexpressUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  aliexpressProductId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   viewsTotal?: Prisma.IntFieldUpdateOperationsInput | number
   salesCount?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1756,8 +1844,10 @@ export type ProductUncheckedUpdateWithoutProductViewsInput = {
   trackInventory?: Prisma.BoolFieldUpdateOperationsInput | boolean
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   reservedQuantity?: Prisma.IntFieldUpdateOperationsInput | number
+  isPublished?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   aliexpressUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  aliexpressProductId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   categoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   viewsTotal?: Prisma.IntFieldUpdateOperationsInput | number
   salesCount?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1786,8 +1876,10 @@ export type ProductCreateManyCategoryInput = {
   trackInventory?: boolean
   stockQuantity?: number
   reservedQuantity?: number
+  isPublished?: boolean
   isFeatured?: boolean
   aliexpressUrl?: string | null
+  aliexpressProductId?: string | null
   viewsTotal?: number
   salesCount?: number
   createdAt?: Date | string
@@ -1811,8 +1903,10 @@ export type ProductUpdateWithoutCategoryInput = {
   trackInventory?: Prisma.BoolFieldUpdateOperationsInput | boolean
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   reservedQuantity?: Prisma.IntFieldUpdateOperationsInput | number
+  isPublished?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   aliexpressUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  aliexpressProductId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   viewsTotal?: Prisma.IntFieldUpdateOperationsInput | number
   salesCount?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1841,8 +1935,10 @@ export type ProductUncheckedUpdateWithoutCategoryInput = {
   trackInventory?: Prisma.BoolFieldUpdateOperationsInput | boolean
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   reservedQuantity?: Prisma.IntFieldUpdateOperationsInput | number
+  isPublished?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   aliexpressUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  aliexpressProductId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   viewsTotal?: Prisma.IntFieldUpdateOperationsInput | number
   salesCount?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1871,8 +1967,10 @@ export type ProductUncheckedUpdateManyWithoutCategoryInput = {
   trackInventory?: Prisma.BoolFieldUpdateOperationsInput | boolean
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   reservedQuantity?: Prisma.IntFieldUpdateOperationsInput | number
+  isPublished?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   aliexpressUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  aliexpressProductId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   viewsTotal?: Prisma.IntFieldUpdateOperationsInput | number
   salesCount?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1963,8 +2061,10 @@ export type ProductSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   trackInventory?: boolean
   stockQuantity?: boolean
   reservedQuantity?: boolean
+  isPublished?: boolean
   isFeatured?: boolean
   aliexpressUrl?: boolean
+  aliexpressProductId?: boolean
   categoryId?: boolean
   viewsTotal?: boolean
   salesCount?: boolean
@@ -1996,8 +2096,10 @@ export type ProductSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exten
   trackInventory?: boolean
   stockQuantity?: boolean
   reservedQuantity?: boolean
+  isPublished?: boolean
   isFeatured?: boolean
   aliexpressUrl?: boolean
+  aliexpressProductId?: boolean
   categoryId?: boolean
   viewsTotal?: boolean
   salesCount?: boolean
@@ -2023,8 +2125,10 @@ export type ProductSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
   trackInventory?: boolean
   stockQuantity?: boolean
   reservedQuantity?: boolean
+  isPublished?: boolean
   isFeatured?: boolean
   aliexpressUrl?: boolean
+  aliexpressProductId?: boolean
   categoryId?: boolean
   viewsTotal?: boolean
   salesCount?: boolean
@@ -2050,8 +2154,10 @@ export type ProductSelectScalar = {
   trackInventory?: boolean
   stockQuantity?: boolean
   reservedQuantity?: boolean
+  isPublished?: boolean
   isFeatured?: boolean
   aliexpressUrl?: boolean
+  aliexpressProductId?: boolean
   categoryId?: boolean
   viewsTotal?: boolean
   salesCount?: boolean
@@ -2059,7 +2165,7 @@ export type ProductSelectScalar = {
   updatedAt?: boolean
 }
 
-export type ProductOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "slug" | "titleEn" | "titleAr" | "descriptionEn" | "descriptionAr" | "priceUsd" | "compareAtUsd" | "costUsd" | "sku" | "images" | "tags" | "inStock" | "trackInventory" | "stockQuantity" | "reservedQuantity" | "isFeatured" | "aliexpressUrl" | "categoryId" | "viewsTotal" | "salesCount" | "createdAt" | "updatedAt", ExtArgs["result"]["product"]>
+export type ProductOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "slug" | "titleEn" | "titleAr" | "descriptionEn" | "descriptionAr" | "priceUsd" | "compareAtUsd" | "costUsd" | "sku" | "images" | "tags" | "inStock" | "trackInventory" | "stockQuantity" | "reservedQuantity" | "isPublished" | "isFeatured" | "aliexpressUrl" | "aliexpressProductId" | "categoryId" | "viewsTotal" | "salesCount" | "createdAt" | "updatedAt", ExtArgs["result"]["product"]>
 export type ProductInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   category?: boolean | Prisma.Product$categoryArgs<ExtArgs>
   variants?: boolean | Prisma.Product$variantsArgs<ExtArgs>
@@ -2103,8 +2209,10 @@ export type $ProductPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     trackInventory: boolean
     stockQuantity: number
     reservedQuantity: number
+    isPublished: boolean
     isFeatured: boolean
     aliexpressUrl: string | null
+    aliexpressProductId: string | null
     categoryId: string | null
     viewsTotal: number
     salesCount: number
@@ -2555,8 +2663,10 @@ export interface ProductFieldRefs {
   readonly trackInventory: Prisma.FieldRef<"Product", 'Boolean'>
   readonly stockQuantity: Prisma.FieldRef<"Product", 'Int'>
   readonly reservedQuantity: Prisma.FieldRef<"Product", 'Int'>
+  readonly isPublished: Prisma.FieldRef<"Product", 'Boolean'>
   readonly isFeatured: Prisma.FieldRef<"Product", 'Boolean'>
   readonly aliexpressUrl: Prisma.FieldRef<"Product", 'String'>
+  readonly aliexpressProductId: Prisma.FieldRef<"Product", 'String'>
   readonly categoryId: Prisma.FieldRef<"Product", 'String'>
   readonly viewsTotal: Prisma.FieldRef<"Product", 'Int'>
   readonly salesCount: Prisma.FieldRef<"Product", 'Int'>

@@ -61,7 +61,13 @@ export default async function AdminOrdersPage() {
         image: item.image,
         quantity: item.quantity,
         unitPrice: item.unitPrice,
-        aliexpressUrl: item.product?.aliexpressUrl ?? null,
+        aliexpressUrl: item.supplierUrl ?? item.product?.aliexpressUrl ?? null,
+        supplierProductId: item.supplierProductId ?? item.product?.aliexpressProductId ?? null,
+        supplierSkuId: item.supplierSkuId ?? item.variantRecord?.aliexpressSkuId ?? null,
+        supplierOrderRef: item.supplierOrderRef,
+        carrier: item.carrier,
+        trackingNumber: item.trackingNumber,
+        trackingUrl: item.trackingUrl,
       })),
     };
   });

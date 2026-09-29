@@ -155,37 +155,40 @@ model Category {
 }
 
 model Product {
-  id               String        @id @default(cuid())
-  slug             String        @unique
-  titleEn          String
-  titleAr          String
-  descriptionEn    String        @db.Text
-  descriptionAr    String        @db.Text
-  priceUsd         Int
-  compareAtUsd     Int?
-  costUsd          Int           @default(0)
-  sku              String?       @unique
-  images           String[]
-  tags             String[]
-  inStock          Boolean       @default(true)
-  trackInventory   Boolean       @default(false)
-  stockQuantity    Int           @default(0)
-  reservedQuantity Int           @default(0)
-  isFeatured       Boolean       @default(false)
-  aliexpressUrl    String?
-  categoryId       String?
-  category         Category?     @relation(fields: [categoryId], references: [id], onDelete: SetNull)
-  variants         Variant[]
-  cartItems        CartItem[]
-  reviews          Review[]
-  orderItems       OrderItem[]
-  productViews     ProductView[]
-  viewsTotal       Int           @default(0)
-  salesCount       Int           @default(0)
-  createdAt        DateTime      @default(now())
-  updatedAt        DateTime      @updatedAt
+  id                  String        @id @default(cuid())
+  slug                String        @unique
+  titleEn             String
+  titleAr             String
+  descriptionEn       String        @db.Text
+  descriptionAr       String        @db.Text
+  priceUsd            Int
+  compareAtUsd        Int?
+  costUsd             Int           @default(0)
+  sku                 String?       @unique
+  images              String[]
+  tags                String[]
+  inStock             Boolean       @default(true)
+  trackInventory      Boolean       @default(false)
+  stockQuantity       Int           @default(0)
+  reservedQuantity    Int           @default(0)
+  isPublished         Boolean       @default(false)
+  isFeatured          Boolean       @default(false)
+  aliexpressUrl       String?
+  aliexpressProductId String?
+  categoryId          String?
+  category            Category?     @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  variants            Variant[]
+  cartItems           CartItem[]
+  reviews             Review[]
+  orderItems          OrderItem[]
+  productViews        ProductView[]
+  viewsTotal          Int           @default(0)
+  salesCount          Int           @default(0)
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
 
   @@index([categoryId])
+  @@index([aliexpressProductId])
   @@index([isFeatured, salesCount])
 }
 
@@ -197,11 +200,13 @@ model Variant {
   titleAr          String
   options          Json
   priceUsd         Int?
+  costUsd          Int?
   sku              String?     @unique
   inStock          Boolean     @default(true)
   trackInventory   Boolean     @default(false)
   stockQuantity    Int         @default(0)
   reservedQuantity Int         @default(0)
+  aliexpressSkuId  String?
   cartItems        CartItem[]
   orderItems       OrderItem[]
 
@@ -322,21 +327,29 @@ model AdminAuditLog {
 }
 
 model OrderItem {
-  id                String   @id @default(cuid())
+  id                String    @id @default(cuid())
   orderId           String
-  order             Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  order             Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
   productId         String?
-  product           Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+  product           Product?  @relation(fields: [productId], references: [id], onDelete: SetNull)
   variantId         String?
-  variantRecord     Variant? @relation(fields: [variantId], references: [id], onDelete: SetNull)
+  variantRecord     Variant?  @relation(fields: [variantId], references: [id], onDelete: SetNull)
   titleEn           String
   titleAr           String?
   image             String?
   variant           Json?
   unitPrice         Int
-  unitCostUsd       Int      @default(0)
+  unitCostUsd       Int       @default(0)
+  supplierUrl       String?
+  supplierProductId String?
+  supplierSkuId     String?
+  supplierOrderRef  String?
+  carrier           String?
+  trackingNumber    String?
+  trackingUrl       String?
+  shippedAt         DateTime?
   quantity          Int
-  inventoryReserved Int      @default(0)
+  inventoryReserved Int       @default(0)
 
   @@index([orderId])
   @@index([productId])

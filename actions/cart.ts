@@ -37,7 +37,7 @@ export async function addToCartAction(input: z.input<typeof cartInputSchema>) {
       where: { id: parsed.data.productId },
       include: { variants: true },
     });
-    if (!product || !product.inStock) return { ok: false as const, error: "cartItemOutOfStock" as const };
+    if (!product || !product.isPublished || !product.inStock) return { ok: false as const, error: "cartItemOutOfStock" as const };
     if (product.variants.length > 0 && !parsed.data.variantId) {
       return { ok: false as const, error: "cartOptionsRequired" as const };
     }
