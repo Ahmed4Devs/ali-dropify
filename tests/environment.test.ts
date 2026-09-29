@@ -22,18 +22,6 @@ const validProductionEnvironment = {
   PAYPAL_CLIENT_SECRET: "paypal-secret-live",
   PAYPAL_WEBHOOK_ID: "paypal-webhook-live",
   PAYPAL_MODE: "live",
-  NEXT_PUBLIC_PADDLE_ENABLED: "true",
-  PADDLE_API_KEY: "pdl_live_valid",
-  NEXT_PUBLIC_PADDLE_CLIENT_TOKEN: "live_valid",
-  PADDLE_WEBHOOK_SECRET: "pdl_webhook_valid",
-  PADDLE_PRODUCT_ID: "pro_valid",
-  PADDLE_ENV: "live",
-  NEXT_PUBLIC_LEMONSQUEEZY_ENABLED: "true",
-  LEMONSQUEEZY_API_KEY: "ls_live_valid",
-  LEMONSQUEEZY_WEBHOOK_SECRET: "ls_webhook_valid",
-  LEMONSQUEEZY_STORE_ID: "12345",
-  LEMONSQUEEZY_VARIANT_ID: "67890",
-  LEMONSQUEEZY_TEST_MODE: "false",
 } as const;
 
 test("does not require production credentials during development", () => {
@@ -45,21 +33,48 @@ test("accepts a complete production environment", () => {
   assert.doesNotThrow(() => assertProductionEnvironment(validProductionEnvironment));
 });
 
+test("accepts an explicit demo deployment without merchant integrations", () => {
+  const demoEnvironment = {
+    NODE_ENV: "production",
+    DEMO_MODE: "true",
+    DATABASE_URL: validProductionEnvironment.DATABASE_URL,
+    BETTER_AUTH_SECRET: validProductionEnvironment.BETTER_AUTH_SECRET,
+    BETTER_AUTH_URL: validProductionEnvironment.BETTER_AUTH_URL,
+    NEXT_PUBLIC_APP_URL: validProductionEnvironment.NEXT_PUBLIC_APP_URL,
+  };
+
+  assert.deepEqual(getProductionEnvironmentErrors(demoEnvironment), []);
+  assert.doesNotThrow(() => assertProductionEnvironment(demoEnvironment));
+});
+
+test("keeps the strict production checks when demo mode is disabled", () => {
+  const errors = getProductionEnvironmentErrors({
+    NODE_ENV: "production",
+    DEMO_MODE: "false",
+  });
+
+  assert.ok(errors.some((error) => error.includes("CRON_SECRET")));
+  assert.ok(errors.some((error) => error.includes("STRIPE_SECRET_KEY")));
+  assert.ok(errors.some((error) => error.includes("PAYPAL_MODE")));
+});
+
+test("rejects an invalid demo mode value instead of treating it as enabled", () => {
+  const errors = getProductionEnvironmentErrors({
+    NODE_ENV: "production",
+    DEMO_MODE: "yes",
+    DATABASE_URL: validProductionEnvironment.DATABASE_URL,
+    BETTER_AUTH_SECRET: validProductionEnvironment.BETTER_AUTH_SECRET,
+    BETTER_AUTH_URL: validProductionEnvironment.BETTER_AUTH_URL,
+    NEXT_PUBLIC_APP_URL: validProductionEnvironment.NEXT_PUBLIC_APP_URL,
+  });
+
+  assert.ok(errors.some((error) => error.includes('DEMO_MODE must be explicitly set to "true" or "false"')));
+  assert.ok(errors.some((error) => error.includes("CRON_SECRET")));
+});
+
 test("does not require merchant-of-record credentials when both opt-ins are disabled", () => {
   assert.deepEqual(getProductionEnvironmentErrors({
     ...validProductionEnvironment,
-    NEXT_PUBLIC_PADDLE_ENABLED: "false",
-    PADDLE_API_KEY: undefined,
-    NEXT_PUBLIC_PADDLE_CLIENT_TOKEN: undefined,
-    PADDLE_WEBHOOK_SECRET: undefined,
-    PADDLE_PRODUCT_ID: undefined,
-    PADDLE_ENV: undefined,
-    NEXT_PUBLIC_LEMONSQUEEZY_ENABLED: "false",
-    LEMONSQUEEZY_API_KEY: undefined,
-    LEMONSQUEEZY_WEBHOOK_SECRET: undefined,
-    LEMONSQUEEZY_STORE_ID: undefined,
-    LEMONSQUEEZY_VARIANT_ID: undefined,
-    LEMONSQUEEZY_TEST_MODE: undefined,
   }), []);
 });
 
@@ -80,8 +95,6 @@ test("reports all missing production integrations together", () => {
     "PAYPAL_CLIENT_SECRET",
     "PAYPAL_WEBHOOK_ID",
     "PAYPAL_MODE",
-    "NEXT_PUBLIC_PADDLE_ENABLED",
-    "NEXT_PUBLIC_LEMONSQUEEZY_ENABLED",
   ]) {
     assert.ok(errors.some((error) => error.includes(name)), `expected an error for ${name}`);
   }
@@ -108,19 +121,4 @@ test("rejects dummy secrets instead of starting a production server", () => {
     }),
     /STRIPE_SECRET_KEY[\s\S]*PAYPAL_MODE/,
   );
-});
-
-test("rejects placeholder Lemon Squeezy IDs and invalid provider modes", () => {
-  const errors = getProductionEnvironmentErrors({
-    ...validProductionEnvironment,
-    PADDLE_ENV: "production",
-    LEMONSQUEEZY_STORE_ID: "000000",
-    LEMONSQUEEZY_VARIANT_ID: "variant-one",
-    LEMONSQUEEZY_TEST_MODE: "yes",
-  });
-
-  assert.ok(errors.some((error) => error.includes("PADDLE_ENV")));
-  assert.ok(errors.some((error) => error.includes("LEMONSQUEEZY_STORE_ID")));
-  assert.ok(errors.some((error) => error.includes("LEMONSQUEEZY_VARIANT_ID")));
-  assert.ok(errors.some((error) => error.includes("LEMONSQUEEZY_TEST_MODE")));
 });

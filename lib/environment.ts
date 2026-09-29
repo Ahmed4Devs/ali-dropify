@@ -6,6 +6,16 @@ function isPlaceholder(value: string | undefined) {
   return !value?.trim() || PLACEHOLDER_PATTERN.test(value);
 }
 
+/**
+ * A demo deployment is still a production Next.js process, but it is intended
+ * for previewing the storefront before merchant integrations are configured.
+ * Keep this opt-in and exact so a typo can never silently disable the strict
+ * production checks.
+ */
+export function isDemoMode(env: Environment = process.env) {
+  return env.NODE_ENV === "production" && env.DEMO_MODE?.trim() === "true";
+}
+
 function validateSecret(
   env: Environment,
   name: string,
@@ -18,13 +28,6 @@ function validateSecret(
       ? ` with at least ${minimumLength} characters`
       : "";
     errors.push(`${name} must be a non-placeholder value${lengthRequirement}`);
-  }
-}
-
-function validatePositiveIntegerId(env: Environment, name: string, errors: string[]) {
-  const value = env[name]?.trim();
-  if (isPlaceholder(value) || !/^[1-9]\d*$/.test(value ?? "")) {
-    errors.push(`${name} must be a positive numeric ID`);
   }
 }
 
@@ -79,15 +82,27 @@ export function getProductionEnvironmentErrors(env: Environment) {
   if (env.NODE_ENV !== "production") return [];
 
   const errors: string[] = [];
+  const demoMode = isDemoMode(env);
+  const demoModeValue = env.DEMO_MODE?.trim();
+  if (demoModeValue !== undefined && demoModeValue !== "true" && demoModeValue !== "false") {
+    errors.push('DEMO_MODE must be explicitly set to "true" or "false"');
+  }
+
   validateDatabaseUrl(env, errors);
   validateSecret(env, "BETTER_AUTH_SECRET", errors, 32);
-  validateSecret(env, "CRON_SECRET", errors, 32);
 
   const authOrigin = validateOrigin(env, "BETTER_AUTH_URL", errors);
   const appOrigin = validateOrigin(env, "NEXT_PUBLIC_APP_URL", errors);
   if (authOrigin && appOrigin && authOrigin !== appOrigin) {
     errors.push("BETTER_AUTH_URL and NEXT_PUBLIC_APP_URL must use the same origin");
   }
+
+  // Demo mode intentionally omits credentials for integrations that are not
+  // needed to preview the catalog. Feature routes still fail closed when they
+  // are called without their provider credentials.
+  if (demoMode) return errors;
+
+  validateSecret(env, "CRON_SECRET", errors, 32);
 
   validateSecret(env, "RESEND_API_KEY", errors);
   const resendFrom = env.RESEND_FROM?.trim();
@@ -101,39 +116,9 @@ export function getProductionEnvironmentErrors(env: Environment) {
   validateSecret(env, "PAYPAL_CLIENT_ID", errors);
   validateSecret(env, "PAYPAL_CLIENT_SECRET", errors);
   validateSecret(env, "PAYPAL_WEBHOOK_ID", errors);
-  if (env.NEXT_PUBLIC_PADDLE_ENABLED !== "true" && env.NEXT_PUBLIC_PADDLE_ENABLED !== "false") {
-    errors.push('NEXT_PUBLIC_PADDLE_ENABLED must be explicitly set to "true" or "false"');
-  }
-  if (env.NEXT_PUBLIC_LEMONSQUEEZY_ENABLED !== "true" && env.NEXT_PUBLIC_LEMONSQUEEZY_ENABLED !== "false") {
-    errors.push('NEXT_PUBLIC_LEMONSQUEEZY_ENABLED must be explicitly set to "true" or "false"');
-  }
-  if (env.NEXT_PUBLIC_PADDLE_ENABLED === "true") {
-    validateSecret(env, "PADDLE_API_KEY", errors);
-    validateSecret(env, "NEXT_PUBLIC_PADDLE_CLIENT_TOKEN", errors);
-    validateSecret(env, "PADDLE_WEBHOOK_SECRET", errors);
-    validateSecret(env, "PADDLE_PRODUCT_ID", errors);
-  }
-  if (env.NEXT_PUBLIC_LEMONSQUEEZY_ENABLED === "true") {
-    validateSecret(env, "LEMONSQUEEZY_API_KEY", errors);
-    validateSecret(env, "LEMONSQUEEZY_WEBHOOK_SECRET", errors);
-    validatePositiveIntegerId(env, "LEMONSQUEEZY_STORE_ID", errors);
-    validatePositiveIntegerId(env, "LEMONSQUEEZY_VARIANT_ID", errors);
-  }
-
   if (env.PAYPAL_MODE !== "sandbox" && env.PAYPAL_MODE !== "live") {
     errors.push('PAYPAL_MODE must be explicitly set to "sandbox" or "live"');
   }
-  if (env.NEXT_PUBLIC_PADDLE_ENABLED === "true" && env.PADDLE_ENV !== "sandbox" && env.PADDLE_ENV !== "live") {
-    errors.push('PADDLE_ENV must be explicitly set to "sandbox" or "live"');
-  }
-  if (
-    env.NEXT_PUBLIC_LEMONSQUEEZY_ENABLED === "true" &&
-    env.LEMONSQUEEZY_TEST_MODE !== "true" &&
-    env.LEMONSQUEEZY_TEST_MODE !== "false"
-  ) {
-    errors.push('LEMONSQUEEZY_TEST_MODE must be explicitly set to "true" or "false"');
-  }
-
   return errors;
 }
 

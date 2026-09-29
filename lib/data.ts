@@ -1,6 +1,7 @@
 import "server-only";
 
 import { Prisma } from "@/generated/prisma/client";
+import { isDemoMode } from "@/lib/environment";
 import { prisma } from "@/lib/prisma";
 import {
   defaultSettings,
@@ -20,7 +21,7 @@ import type {
   VariantOptions,
 } from "@/types";
 
-const demoFallbackEnabled = process.env.NODE_ENV !== "production";
+const demoFallbackEnabled = process.env.NODE_ENV !== "production" || isDemoMode(process.env);
 
 function rethrowInProduction(error: unknown) {
   if (!demoFallbackEnabled) throw error;
@@ -64,9 +65,10 @@ export async function getProducts(
   category?: string,
   query?: string,
   sort: ProductSort = "newest",
+  includeDrafts = false,
 ): Promise<ProductData[]> {
   try {
-    const where: Prisma.ProductWhereInput = {};
+    const where: Prisma.ProductWhereInput = includeDrafts ? {} : { isPublished: true };
     if (category) where.category = { slug: category };
     if (query) {
       where.OR = [
@@ -108,6 +110,10 @@ export async function getProducts(
   }
 }
 
+export function getAdminProducts(): Promise<ProductData[]> {
+  return getProducts(undefined, undefined, "newest", true);
+}
+
 export async function getProductPage(
   category: string | undefined,
   query: string | undefined,
@@ -116,7 +122,7 @@ export async function getProductPage(
   pageSize = 12,
 ) {
   try {
-    const where: Prisma.ProductWhereInput = {};
+    const where: Prisma.ProductWhereInput = { isPublished: true };
     if (category) where.category = { slug: category };
     if (query) {
       where.OR = [
@@ -178,6 +184,7 @@ export async function getProductPage(
 export async function getProductSitemapEntries() {
   try {
     return await prisma.product.findMany({
+      where: { isPublished: true },
       select: { slug: true, updatedAt: true, images: true },
       orderBy: { updatedAt: "desc" },
     });
@@ -198,6 +205,7 @@ function filterDemoProducts(
 ): ProductData[] {
   let result = demoProducts.filter(
     (product) =>
+      product.isPublished &&
       (!category || product.category?.slug === category) &&
       (!query ||
         `${product.titleEn} ${product.titleAr} ${product.tags.join(" ")}`
@@ -219,8 +227,8 @@ export async function getFeaturedProducts(): Promise<ProductData[]> {
 
 export async function getProductBySlug(slug: string): Promise<ProductData | null> {
   try {
-    const product = await prisma.product.findUnique({
-      where: { slug },
+    const product = await prisma.product.findFirst({
+      where: { slug, isPublished: true },
       include: {
         category: true,
         variants: true,
@@ -248,7 +256,7 @@ export async function getProductBySlug(slug: string): Promise<ProductData | null
     rethrowInProduction(error);
     // The local demo catalog keeps the UI available before PostgreSQL is started.
   }
-  const product = demoProducts.find((entry) => entry.slug === slug);
+  const product = demoProducts.find((entry) => entry.slug === slug && entry.isPublished);
   if (!product) return null;
   return {
     ...product,
@@ -268,7 +276,7 @@ export async function getRelatedProducts(categoryId: string | null, productId: s
 export async function getTestimonials() {
   try {
     const reviews = await prisma.review.findMany({
-      where: { status: "APPROVED", images: { isEmpty: false } },
+      where: { status: "APPROVED", images: { isEmpty: false }, product: { isPublished: true } },
       include: { product: { select: { titleEn: true, titleAr: true } } },
       orderBy: [{ rating: "desc" }, { createdAt: "desc" }],
       take: 4,
@@ -308,7 +316,7 @@ export async function getAddressesForUser(userId: string) {
 
 export async function getAdminOrders() {
   return prisma.order.findMany({
-    include: { items: { include: { product: true } } },
+    include: { items: { include: { product: true, variantRecord: true } } },
     orderBy: { createdAt: "desc" },
   });
 }
